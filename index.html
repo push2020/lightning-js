@@ -32,7 +32,11 @@
               var app = document.getElementById('app')
               if (!app) return
               var scale = Math.min(window.innerWidth / APP_W, window.innerHeight / APP_H)
+              var left = (window.innerWidth - APP_W * scale) / 2
+              var top = (window.innerHeight - APP_H * scale) / 2
               app.style.transform = 'scale(' + scale + ')'
+              app.style.left = left + 'px'
+              app.style.top = top + 'px'
             }
 
             window.addEventListener('resize', fitAppToWindow)
