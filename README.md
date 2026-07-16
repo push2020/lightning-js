@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # My Blits App
 
 ### my-blits-app
@@ -47,3 +48,6 @@ This will create a production version of the app in the `dist` folder.
 - [Blits documentation](https://lightningjs.io/v3-docs/blits/getting_started/intro.html) - official documentation
 - [Blits Example App](https://blits-demo.lightningjs.io/?source=true) - a great reference to learn by example
 - [Blits Components](https://lightningjs.io/blits-components.html) - off-the-shelf, basic and performant reference components
+=======
+# lightning-js
+>>>>>>> 0b2cff57a86761ccd1bfb96f3f1e849782dd2d87
