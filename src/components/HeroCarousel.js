@@ -9,6 +9,9 @@ const CTA_BOUNCE_SCALE = 0.94
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
 // 1920x880 matches constants/layout.js STAGE_W/HERO_HEIGHT, x="64" matches
 // CONTENT_PADDING_X, dot spacing of 22px is a fixed visual constant.
+// CTA y="762" and dots y="850" are positioned to clear the copy block in
+// HeroSlide.js (which reserves room for a full 2-line description) - if that
+// copy block's vertical layout changes, these need to move together with it.
 
 /**
  * Full-width auto-playing hero banner. Owns real keyboard focus: Left/Right
@@ -32,7 +35,7 @@ export default Blits.Component('HeroCarousel', {
       />
       <Element
         x="64"
-        y="730"
+        y="762"
         w="280"
         h="72"
         :rounded="8"
@@ -42,7 +45,7 @@ export default Blits.Component('HeroCarousel', {
       >
         <Text content="Watch Now" size="28" color="#FFFFFF" font="raleway" x="30" y="20" />
       </Element>
-      <Element x="64" y="820">
+      <Element x="64" y="850">
         <Element
           :for="(slide, index) in $slides"
           key="$slide.id"
