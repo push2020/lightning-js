@@ -10,7 +10,6 @@ Blits.Launch(App, 'app', {
   canvasColor: COLORS.background,
   enableMouse: true,
   viewportMargin: 300,
-  fpsInterval: 500,
   fonts: [
     {
       family: 'lato',
