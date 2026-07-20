@@ -1,6 +1,5 @@
 import Blits from '@lightningjs/blits'
 import { CARD_W, CARD_GAP } from '../constants/layout.js'
-import { DURATION, EASING, transition } from '../helpers/animations.js'
 import { getRailScrollOffset } from '../helpers/scroll.js'
 import { playFocusSound, playSelectSound } from '../helpers/focusSound.js'
 import PosterCard from './PosterCard.js'
@@ -9,8 +8,8 @@ import PosterCard from './PosterCard.js'
 // 466 = RAIL_TITLE_HEIGHT (76) + CARD_H (390). 1792 = RAIL_VISIBLE_WIDTH.
 // 288 = CARD_W (260) + CARD_GAP (28). Keep these in sync with constants/layout.js.
 // The card track sits in a slightly taller/wider box than the cards themselves
-// (24px vertical buffer, 20px left inset) so the focused card's scale-up
-// animation has room to breathe without being clipped by the track boundary.
+// (24px vertical buffer, 20px left inset) so the focused card's border never
+// gets clipped by the track boundary.
 // The row starts at y="52" (52 + 24 buffer = 76), leaving extra padding
 // between the rail title and the first row of cards.
 
@@ -27,7 +26,7 @@ export default Blits.Component('ContentRail', {
     <Element h="466">
       <Text :content="$title" size="32" :color="$$hasFocus ? '#FFFFFF' : '#AAAAAA'" />
       <Element y="52" w="1812" h="438" clipping="true">
-        <Element :x.transition="$trackTransition">
+        <Element :x="-$scrollOffset">
           <PosterCard
             :for="(item, index) in $items"
             key="$item.id"
@@ -62,15 +61,6 @@ export default Blits.Component('ContentRail', {
        */
       scrollOffset: 0,
     }
-  },
-  computed: {
-    /**
-     * Transition config that smoothly scrolls the card track to reveal the selected card
-     * @returns {object}
-     */
-    trackTransition() {
-      return transition(-this.scrollOffset, { duration: DURATION.base, easing: EASING.smooth })
-    },
   },
   input: {
     /**

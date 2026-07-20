@@ -1,6 +1,5 @@
 import Blits from '@lightningjs/blits'
 import { HERO_HEIGHT, RAIL_HEIGHT, NAVBAR_HEIGHT } from '../constants/layout.js'
-import { DURATION, EASING, transition } from '../helpers/animations.js'
 import { getPageScrollOffset } from '../helpers/scroll.js'
 import HeroCarousel from './HeroCarousel.js'
 import ContentRail from './ContentRail.js'
@@ -20,7 +19,7 @@ export default Blits.Component('PageContainer', {
     ContentRail,
   },
   template: `
-    <Element :y.transition="$scrollTransition">
+    <Element :y="-$scrollOffset">
       <HeroCarousel ref="hero" :slides="$hero" />
       <ContentRail
         :for="(rail, index) in $rails"
@@ -53,13 +52,6 @@ export default Blits.Component('PageContainer', {
      */
     scrollOffset() {
       return getPageScrollOffset(this.sectionIndex, HERO_HEIGHT, RAIL_HEIGHT, NAVBAR_HEIGHT)
-    },
-    /**
-     * Transition config that smoothly scrolls the page to the focused section
-     * @returns {object}
-     */
-    scrollTransition() {
-      return transition(-this.scrollOffset, { duration: DURATION.slow, easing: EASING.smooth })
     },
   },
   hooks: {

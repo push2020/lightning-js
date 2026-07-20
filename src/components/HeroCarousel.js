@@ -1,10 +1,8 @@
 import Blits from '@lightningjs/blits'
-import { DURATION } from '../helpers/animations.js'
 import { playFocusSound, playSelectSound } from '../helpers/focusSound.js'
 import HeroSlide from './HeroSlide.js'
 
 const AUTOPLAY_INTERVAL = 5000
-const CTA_BOUNCE_SCALE = 0.94
 
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
 // 1920x880 matches constants/layout.js STAGE_W/HERO_HEIGHT, x="64" matches
@@ -15,8 +13,8 @@ const CTA_BOUNCE_SCALE = 0.94
 
 /**
  * Full-width auto-playing hero banner. Owns real keyboard focus: Left/Right
- * manually change slides (and restart autoplay), Enter triggers the Watch Now
- * feedback animation. Pagination dots reflect the active slide.
+ * manually change slides (and restart autoplay), Enter confirms the Watch Now
+ * action. Pagination dots reflect the active slide. No animation.
  */
 export default Blits.Component('HeroCarousel', {
   components: {
@@ -41,7 +39,6 @@ export default Blits.Component('HeroCarousel', {
         :rounded="8"
         :color="$$hasFocus ? '#00B3FF' : 'rgba(255, 255, 255, 0.12)'"
         :border="{width: 2, color: '#FFFFFF'}"
-        :scale.transition="{value: $ctaScale, duration: 200}"
       >
         <Text content="Watch Now" size="28" color="#FFFFFF" x="30" y="20" />
       </Element>
@@ -69,11 +66,6 @@ export default Blits.Component('HeroCarousel', {
        * @type {number}
        */
       currentIndex: 0,
-      /**
-       * Scale applied to the CTA button, used for the Enter key bounce feedback
-       * @type {number}
-       */
-      ctaScale: 1,
       /**
        * Interval id for the autoplay rotation, so it can be cleared and restarted
        * @type {number|null}
@@ -108,15 +100,11 @@ export default Blits.Component('HeroCarousel', {
       this.goToSlide(next)
     },
     /**
-     * Triggers the Watch Now CTA bounce feedback
+     * Confirms the Watch Now action
      * @returns {void}
      */
     enter() {
       playSelectSound()
-      this.ctaScale = CTA_BOUNCE_SCALE
-      this.$setTimeout(() => {
-        this.ctaScale = 1
-      }, DURATION.fast)
     },
   },
   methods: {

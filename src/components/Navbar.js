@@ -26,15 +26,9 @@ export default Blits.Component('Navbar', {
           :content="$tab.label"
           size="32"
           :color="$index === $focusIndex ? '#FFFFFF' : '#AAAAAA'"
-          :scale.transition="{value: $index === $focusIndex && $$hasFocus ? 1.12 : 1, duration: 200, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)'}"
+          :scale="$index === $focusIndex && $$hasFocus ? 1.12 : 1"
         />
-        <Element
-          y="46"
-          h="4"
-          :rounded="2"
-          color="#00B3FF"
-          :w.transition="{value: $index === $focusIndex ? 70 : 0, duration: 300, easing: 'cubic-bezier(0.4, 0, 0.2, 1)'}"
-        />
+        <Element y="46" h="4" :rounded="2" color="#00B3FF" :w="$index === $focusIndex ? 70 : 0" />
       </Element>
     </Element>
   `,
