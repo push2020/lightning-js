@@ -59,7 +59,7 @@ export default Blits.Component('PosterCard', {
         <SkeletonCard :show="!$imageLoaded" :w="$w" h="300" />
         <FocusBorder :active="$focused" :w="$w" h="300" />
         <Element y="314" :w="$w">
-          <Text :content="$title" size="26" color="#FFFFFF" font="raleway" maxwidth="$w" maxlines="1" />
+          <Text :content="$title" size="26" color="#FFFFFF" maxwidth="$w" maxlines="1" />
           <Text y="32" :content="$genre" size="20" color="#AAAAAA" maxwidth="$w" maxlines="1" />
         </Element>
       </Element>

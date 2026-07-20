@@ -15,7 +15,7 @@ export default Blits.Component('LoadingScreen', {
   },
   template: `
     <Element :show="$visible" w="1920" h="1080" color="#0B0B0B" z="1000" :alpha.transition="{value: $show ? 1 : 0, duration: 500}">
-      <Text content="JioTV+" size="64" font="raleway" color="#00B3FF" x="960" y="460" mount="0.5" />
+      <Text content="JioTV+" size="64" color="#00B3FF" x="960" y="460" mount="0.5" />
       <Loader x="960" y="560" mount="{x: 0.5}" w="160" loaderColor="#00B3FF" />
     </Element>
   `,

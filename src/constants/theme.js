@@ -11,11 +11,3 @@ export const COLORS = {
   textSecondary: '#AAAAAA',
   navGradientTop: 'rgba(11, 11, 11, 0.95)',
 }
-
-/**
- * Font families registered in src/index.js, referenced by name throughout the app.
- */
-export const FONTS = {
-  body: 'lato',
-  heading: 'raleway',
-}

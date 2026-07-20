@@ -25,7 +25,7 @@ export default Blits.Component('ContentRail', {
   },
   template: `
     <Element h="466">
-      <Text :content="$title" size="32" font="raleway" :color="$$hasFocus ? '#FFFFFF' : '#AAAAAA'" />
+      <Text :content="$title" size="32" :color="$$hasFocus ? '#FFFFFF' : '#AAAAAA'" />
       <Element y="52" w="1812" h="438" clipping="true">
         <Element :x.transition="$trackTransition">
           <PosterCard

@@ -64,6 +64,18 @@ export default Blits.Application({
       }, BOOT_DELAY)
     },
   },
+  input: {
+    /**
+     * Closes the app when Back is pressed at the root level. Content pages
+     * already handle Back themselves (returning focus to the Navbar), so this
+     * only fires once Back bubbles all the way up - i.e. when the Navbar
+     * itself is focused and there's nowhere left to go back to.
+     * @returns {void}
+     */
+    back() {
+      this.closeApp()
+    },
+  },
   methods: {
     /**
      * Focuses the top navigation bar
@@ -72,6 +84,18 @@ export default Blits.Application({
     focusNavbar() {
       const navbar = this.$select('navbar')
       if (navbar) navbar.$focus()
+    },
+    /**
+     * Closes the app window. Works when running as (or embedded in) a
+     * script-opened/kiosk-style window - e.g. a real TV app runtime - and is
+     * a harmless no-op in a regular user-opened desktop browser tab, which
+     * browsers block from being closed by script for security reasons.
+     * @returns {void}
+     */
+    closeApp() {
+      if (typeof window !== 'undefined' && typeof window.close === 'function') {
+        window.close()
+      }
     },
   },
 })

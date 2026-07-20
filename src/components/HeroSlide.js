@@ -20,8 +20,8 @@ export default Blits.Component('HeroSlide', {
       <Element w="1920" h="880" color="{bottom: '#0B0B0B', top: 'rgba(11, 11, 11, 0.1)'}" />
       <Element w="1920" h="260" y="620" color="{bottom: '#0B0B0B', top: 'rgba(11, 11, 11, 0)'}" />
       <Element y="520" w="900" :x.transition="$slideTransition">
-        <Text :content="$subtitle" size="28" color="#00B3FF" font="lato" />
-        <Text y="46" :content="$title" size="72" color="#FFFFFF" font="raleway" maxwidth="900" maxlines="1" />
+        <Text :content="$subtitle" size="28" color="#00B3FF" />
+        <Text y="46" :content="$title" size="72" color="#FFFFFF" maxwidth="900" maxlines="1" />
         <Text
           y="150"
           :content="$description"

@@ -20,12 +20,11 @@ const TABS = [
 export default Blits.Component('Navbar', {
   template: `
     <Element w="1920" h="130" color="{top: 'rgba(11, 11, 11, 0.95)', bottom: 'rgba(11, 11, 11, 0.95)'}" z="100">
-      <Text content="JioTV+" size="40" font="raleway" color="#00B3FF" x="64" y="46" />
+      <Text content="JioTV+" size="40" color="#00B3FF" x="64" y="46" />
       <Element :for="(tab, index) in $tabs" key="$tab.path" :x="284 + $index * 130" y="40">
         <Text
           :content="$tab.label"
           size="32"
-          font="opensans"
           :color="$index === $focusIndex ? '#FFFFFF' : '#AAAAAA'"
           :scale.transition="{value: $index === $focusIndex && $$hasFocus ? 1.12 : 1, duration: 200, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)'}"
         />

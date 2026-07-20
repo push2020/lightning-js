@@ -30,9 +30,9 @@ function round1(value) {
 export default Blits.Component('PerfHud', {
   template: `
     <Element x="1690" y="14" w="216" h="98" color="rgba(0, 0, 0, 0.6)" rounded="8" z="500">
-      <Text x="14" y="10" :content="'FPS: ' + $fps" size="20" color="#00B3FF" font="raleway" />
-      <Text x="14" y="38" :content="'Frame: ' + $frameTime + ' ms'" size="20" color="#FFFFFF" font="lato" />
-      <Text x="14" y="64" :content="'Work: ' + $workTime + ' ms'" size="20" color="#AAAAAA" font="lato" />
+      <Text x="14" y="10" :content="'FPS: ' + $fps" size="20" color="#00B3FF" />
+      <Text x="14" y="38" :content="'Frame: ' + $frameTime + ' ms'" size="20" color="#FFFFFF" />
+      <Text x="14" y="64" :content="'Work: ' + $workTime + ' ms'" size="20" color="#AAAAAA" />
     </Element>
   `,
   state() {
