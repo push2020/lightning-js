@@ -8,7 +8,7 @@
     "start": "npm run dev",
     "lint": "eslint '**/*.js'",
     "lint:fix": "eslint '**/*.js' --fix",
-    "build": "vite build",
+    "build": "vite build && node scriptloader.js",
     "dev": "vite dev --host",
     "postinstall": "husky"
   },
