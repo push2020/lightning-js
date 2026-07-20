@@ -2,6 +2,7 @@ import Blits from '@lightningjs/blits'
 import Navbar from './components/Navbar.js'
 import LoadingScreen from './components/LoadingScreen.js'
 import PerfHud from './components/PerfHud.js'
+import ExitConfirmModal from './components/ExitConfirmModal.js'
 import Home from './pages/Home.js'
 import Movies from './pages/Movies.js'
 import Shows from './pages/Shows.js'
@@ -26,6 +27,7 @@ export default Blits.Application({
     Navbar,
     LoadingScreen,
     PerfHud,
+    ExitConfirmModal,
   },
   template: `
     <Element w="1920" h="1080" color="#0B0B0B">
@@ -33,6 +35,7 @@ export default Blits.Application({
       <Navbar ref="navbar" />
       <LoadingScreen :show="$loading" />
       <PerfHud />
+      <ExitConfirmModal ref="exitConfirm" :open="$showExitConfirm" />
     </Element>
   `,
   routes: [
@@ -48,16 +51,23 @@ export default Blits.Application({
        * @type {boolean}
        */
       loading: true,
+      /**
+       * Whether the exit-confirmation dialog is currently shown
+       * @type {boolean}
+       */
+      showExitConfirm: false,
     }
   },
   hooks: {
     /**
-     * Registers the focus handoff listener from pages back to the Navbar, shows
-     * the boot splash briefly, then gives the Navbar initial focus
+     * Registers the focus handoff / exit-confirmation listeners, shows the
+     * boot splash briefly, then gives the Navbar initial focus
      * @returns {void}
      */
     ready() {
       this.$listen('nav:focus-navbar', () => this.focusNavbar())
+      this.$listen('app:confirm-exit', () => this.closeApp())
+      this.$listen('app:cancel-exit', () => this.hideExitConfirm())
       this.$setTimeout(() => {
         this.loading = false
         this.focusNavbar()
@@ -66,14 +76,15 @@ export default Blits.Application({
   },
   input: {
     /**
-     * Closes the app when Back is pressed at the root level. Content pages
-     * already handle Back themselves (returning focus to the Navbar), so this
-     * only fires once Back bubbles all the way up - i.e. when the Navbar
-     * itself is focused and there's nowhere left to go back to.
+     * Opens the exit-confirmation dialog when Back is pressed at the root
+     * level. Content pages already handle Back themselves (returning focus
+     * to the Navbar), so this only fires once Back bubbles all the way up -
+     * i.e. when the Navbar itself is focused and there's nowhere left to go
+     * back to.
      * @returns {void}
      */
     back() {
-      this.closeApp()
+      this.showExitConfirmDialog()
     },
   },
   methods: {
@@ -84,6 +95,23 @@ export default Blits.Application({
     focusNavbar() {
       const navbar = this.$select('navbar')
       if (navbar) navbar.$focus()
+    },
+    /**
+     * Shows the exit-confirmation dialog and gives it focus
+     * @returns {void}
+     */
+    showExitConfirmDialog() {
+      this.showExitConfirm = true
+      const modal = this.$select('exitConfirm')
+      if (modal) modal.$focus()
+    },
+    /**
+     * Hides the exit-confirmation dialog and returns focus to the Navbar
+     * @returns {void}
+     */
+    hideExitConfirm() {
+      this.showExitConfirm = false
+      this.focusNavbar()
     },
     /**
      * Closes the app window. Works when running as (or embedded in) a
