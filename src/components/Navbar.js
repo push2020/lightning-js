@@ -25,7 +25,7 @@ export default Blits.Component('Navbar', {
         <Text
           :content="$tab.label"
           size="32"
-          font="lato"
+          font="opensans"
           :color="$index === $focusIndex ? '#FFFFFF' : '#AAAAAA'"
           :scale.transition="{value: $index === $focusIndex && $$hasFocus ? 1.12 : 1, duration: 200, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)'}"
         />
