@@ -10,14 +10,31 @@ import Sports from './pages/Sports.js'
 
 const BOOT_DELAY = 600
 
-// Tab pages keep their state (scroll position, selected cards) alive when
-// switching away, and never steal focus from the Navbar automatically -
-// the Navbar explicitly hands focus off to the page content on Down/Enter.
+// Tab pages never steal focus from the Navbar automatically - the Navbar
+// explicitly hands focus off to the page content on Down/Enter.
+//
+// keepAlive is intentionally false: the Navbar always navigates with
+// $router.to() (never $router.back()), and Blits only restores a cached
+// "keepAlive" view through the back-navigation path. With inHistory:false
+// too, a kept-alive view was never destroyed AND never reachable again -
+// every tab switch orphaned the previous page's view instead of freeing it.
 const TAB_ROUTE_OPTIONS = {
   passFocus: false,
   inHistory: false,
-  keepAlive: true,
+  keepAlive: false,
   reuseComponent: false,
+}
+
+// Blits' default route transition fades the incoming page's alpha from 0 to
+// 1 over 200ms. That means every Text node on the page is first created and
+// rasterized while genuinely at alpha 0 (only the very first page loaded at
+// boot skips this, since it has no previous route to transition from) - and
+// the canvas-based text renderer never recovers once alpha animates back up,
+// leaving hero titles/buttons blank while images (whose textures load
+// independently of alpha) render fine. Dropping "in" skips that fade-in
+// entirely; the "out" fade on the outgoing page is unaffected and kept.
+const TAB_TRANSITION = {
+  out: { prop: 'alpha', value: 0, duration: 100 },
 }
 
 // Note: template values are hardcoded literals - see components/FocusBorder.js for why.
@@ -39,10 +56,10 @@ export default Blits.Application({
     </Element>
   `,
   routes: [
-    { path: '/', component: Home, options: TAB_ROUTE_OPTIONS },
-    { path: '/movies', component: Movies, options: TAB_ROUTE_OPTIONS },
-    { path: '/shows', component: Shows, options: TAB_ROUTE_OPTIONS },
-    { path: '/sports', component: Sports, options: TAB_ROUTE_OPTIONS },
+    { path: '/', component: Home, options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
+    { path: '/movies', component: Movies, options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
+    { path: '/shows', component: Shows, options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
+    { path: '/sports', component: Sports, options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
   ],
   state() {
     return {

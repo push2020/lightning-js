@@ -2,8 +2,6 @@ import Blits from '@lightningjs/blits'
 import { playFocusSound, playSelectSound } from '../helpers/focusSound.js'
 import HeroSlide from './HeroSlide.js'
 
-const AUTOPLAY_INTERVAL = 5000
-
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
 // 1920x880 matches constants/layout.js STAGE_W/HERO_HEIGHT, x="64" matches
 // CONTENT_PADDING_X, dot spacing of 22px is a fixed visual constant.
@@ -12,9 +10,9 @@ const AUTOPLAY_INTERVAL = 5000
 // copy block's vertical layout changes, these need to move together with it.
 
 /**
- * Full-width auto-playing hero banner. Owns real keyboard focus: Left/Right
- * manually change slides (and restart autoplay), Enter confirms the Watch Now
- * action. Pagination dots reflect the active slide. No animation.
+ * Full-width hero banner. Owns real keyboard focus: Left/Right manually
+ * change slides, Enter confirms the Watch Now action. Pagination dots
+ * reflect the active slide. No animation, no autoplay.
  */
 export default Blits.Component('HeroCarousel', {
   components: {
@@ -66,25 +64,11 @@ export default Blits.Component('HeroCarousel', {
        * @type {number}
        */
       currentIndex: 0,
-      /**
-       * Interval id for the autoplay rotation, so it can be cleared and restarted
-       * @type {number|null}
-       */
-      autoplayId: null,
     }
-  },
-  hooks: {
-    /**
-     * Starts the autoplay rotation once the carousel is mounted
-     * @returns {void}
-     */
-    ready() {
-      this.startAutoplay()
-    },
   },
   input: {
     /**
-     * Manually shows the previous hero slide and restarts autoplay
+     * Manually shows the previous hero slide
      * @returns {void}
      */
     left() {
@@ -92,7 +76,7 @@ export default Blits.Component('HeroCarousel', {
       this.goToSlide(previous)
     },
     /**
-     * Manually shows the next hero slide and restarts autoplay
+     * Manually shows the next hero slide
      * @returns {void}
      */
     right() {
@@ -109,24 +93,13 @@ export default Blits.Component('HeroCarousel', {
   },
   methods: {
     /**
-     * Advances to the given slide index and restarts the autoplay timer
+     * Advances to the given slide index
      * @param {number} index - target slide index
      * @returns {void}
      */
     goToSlide(index) {
       this.currentIndex = index
       playFocusSound()
-      this.startAutoplay()
-    },
-    /**
-     * (Re)starts the autoplay interval that advances the hero slide every 5 seconds
-     * @returns {void}
-     */
-    startAutoplay() {
-      if (this.autoplayId) this.$clearInterval(this.autoplayId)
-      this.autoplayId = this.$setInterval(() => {
-        this.currentIndex = this.currentIndex === this.slides.length - 1 ? 0 : this.currentIndex + 1
-      }, AUTOPLAY_INTERVAL)
     },
   },
 })
