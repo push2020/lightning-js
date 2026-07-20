@@ -1,18 +1,9 @@
 import Blits from '@lightningjs/blits'
 
 // How often the displayed FPS/Frame/Work numbers refresh (ms)
-const FLUSH_MS = 250
+const FLUSH_MS = 300
 
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
-
-/**
- * Rounds a number to one decimal place.
- * @param {number} value - the number to round
- * @returns {number} value rounded to 1 decimal place
- */
-function round1(value) {
-  return Math.round(value * 10) / 10
-}
 
 /**
  * Fixed performance overlay pinned to the top-right of the screen. Runs its
@@ -83,8 +74,8 @@ export default Blits.Component('PerfHud', {
         const elapsed = now - windowStart
         if (elapsed >= FLUSH_MS) {
           this.fps = Math.round((frames * 1000) / elapsed)
-          this.frameTime = round1(elapsed / frames).toFixed(1)
-          this.workTime = round1(workSum / frames).toFixed(1)
+          this.frameTime = (elapsed / frames).toFixed(1)
+          this.workTime = (workSum / frames).toFixed(1)
           frames = 0
           workSum = 0
           windowStart = now
