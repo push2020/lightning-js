@@ -4,6 +4,16 @@ import { SCROLL_TRANSITION_DURATION, SCROLL_TRANSITION_EASING } from '../constan
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
 // 1920x880 matches constants/layout.js STAGE_W/HERO_HEIGHT. x="64" on the copy
 // block matches constants/layout.js CONTENT_PADDING_X.
+//
+// The copy block's Text nodes need to render while genuinely visible at
+// least once, or they stay blank forever - see the TAB_TRANSITION comment in
+// App.js: a text node whose alpha is still 0 (or animating up from 0) the
+// first time it tries to rasterize never recovers, even once alpha reaches 1
+// later. $copyAlpha works around this by holding the copy at alpha 1 for the
+// single frame before this slide's `ready` hook fires (letting its Text
+// nodes rasterize while visible), then dropping to the real active/inactive
+// value. That one frame is a barely-perceptible blip in the copy block only,
+// not the whole slide - a fair trade for text that reliably shows up.
 
 /**
  * A single hero banner slide: full-bleed background image, gradient overlay
@@ -12,11 +22,13 @@ import { SCROLL_TRANSITION_DURATION, SCROLL_TRANSITION_EASING } from '../constan
  */
 export default Blits.Component('HeroSlide', {
   template: `
-    <Element w="1920" h="880" :alpha.transition="$alphaTransition">
-      <Element w="1920" h="880" :src="$imageSrc" fit="cover" color="#ffffff" />
-      <Element w="1920" h="880" color="{bottom: '#0B0B0B', top: 'rgba(11, 11, 11, 0.1)'}" />
-      <Element w="1920" h="260" y="620" color="{bottom: '#0B0B0B', top: 'rgba(11, 11, 11, 0)'}" />
-      <Element y="520" w="900" x="64">
+    <Element w="1920" h="880">
+      <Element w="1920" h="880" :alpha.transition="$alphaTransition">
+        <Element w="1920" h="880" :src="$imageSrc" fit="cover" color="#ffffff" />
+        <Element w="1920" h="880" color="{bottom: '#0B0B0B', top: 'rgba(11, 11, 11, 0.1)'}" />
+        <Element w="1920" h="260" y="620" color="{bottom: '#0B0B0B', top: 'rgba(11, 11, 11, 0)'}" />
+      </Element>
+      <Element y="520" w="900" x="64" :alpha="$copyAlpha">
         <Text :content="$subtitle" size="28" color="#00B3FF" />
         <Text y="46" :content="$title" size="72" color="#FFFFFF" maxwidth="900" maxlines="1" />
         <Text
@@ -38,6 +50,17 @@ export default Blits.Component('HeroSlide', {
     description: '',
     active: false,
   },
+  state() {
+    return {
+      /**
+       * Whether this slide's first render has completed. Starts false so the
+       * copy block's Text nodes get one frame to rasterize while visible -
+       * see the note above.
+       * @type {boolean}
+       */
+      mounted: false,
+    }
+  },
   computed: {
     /**
      * Image src descriptor with keepAlive set, so the hero texture survives
@@ -50,15 +73,41 @@ export default Blits.Component('HeroSlide', {
     },
     /**
      * Transition config that smoothly crossfades this slide in/out when the
-     * `active` prop changes, instead of jumping straight to the target alpha
+     * `active` prop changes, instead of jumping straight to the target alpha.
+     * Uses a zero duration until this slide has completed its first mount, so
+     * a slide freshly instantiated by the parent's :range window (e.g. a
+     * neighbor coming into range) snaps straight to its resting alpha instead
+     * of animating down from the engine's default alpha of 1 - which would
+     * otherwise briefly flash that slide at full opacity on top of the
+     * actually active one.
      * @returns {{value: number, duration: number, easing: string}}
      */
     alphaTransition() {
       return {
         value: this.active ? 1 : 0,
-        duration: SCROLL_TRANSITION_DURATION,
+        duration: this.mounted ? SCROLL_TRANSITION_DURATION : 0,
         easing: SCROLL_TRANSITION_EASING,
       }
+    },
+    /**
+     * Alpha for the copy block only - see the note above for why this holds
+     * at 1 until the first render completes, instead of following `active`
+     * from the very start like the image does.
+     * @returns {number}
+     */
+    copyAlpha() {
+      return this.mounted ? (this.active ? 1 : 0) : 1
+    },
+  },
+  hooks: {
+    /**
+     * Marks this slide as mounted once its first render has completed, so
+     * the copy block settles to its real active/inactive alpha and
+     * subsequent image crossfades animate instead of snapping
+     * @returns {void}
+     */
+    ready() {
+      this.mounted = true
     },
   },
 })

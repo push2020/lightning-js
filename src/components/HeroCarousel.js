@@ -11,6 +11,10 @@ const { heroNeighbors: HERO_NEIGHBORS } = getTierConfig().window
 // CTA y="762" and dots y="850" are positioned to clear the copy block in
 // HeroSlide.js (which reserves room for a full 2-line description) - if that
 // copy block's vertical layout changes, these need to move together with it.
+// The CTA and dots need zIndex="1": siblings are stacked by creation order,
+// not template order, and the :range window mounts new HeroSlide instances
+// on demand as slides are paged to - each of those mounts after the CTA/dots
+// already exist, which would otherwise render on top of them.
 
 /**
  * Full-width hero banner. Owns real keyboard focus: Left/Right manually
@@ -38,13 +42,14 @@ export default Blits.Component('HeroCarousel', {
         y="762"
         w="280"
         h="72"
+        zIndex="1"
         :rounded="8"
         :color="$$hasFocus ? '#00B3FF' : 'rgba(255, 255, 255, 0.12)'"
         :border="{width: 2, color: '#FFFFFF'}"
       >
         <Text content="Watch Now" size="28" color="#FFFFFF" x="30" y="20" />
       </Element>
-      <Element x="64" y="850">
+      <Element x="64" y="850" zIndex="1">
         <Element
           :for="(slide, index) in $slides"
           key="$slide.id"
