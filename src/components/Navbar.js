@@ -2,10 +2,10 @@ import Blits from '@lightningjs/blits'
 import { playFocusSound, playSelectSound } from '../helpers/focusSound.js'
 
 const TABS = [
-  { label: 'Home', path: '/' },
-  { label: 'Movies', path: '/movies' },
-  { label: 'Shows', path: '/shows' },
-  { label: 'Sports', path: '/sports' },
+  { label: 'Home', path: '/', pillWidth: 117 },
+  { label: 'Movies', path: '/movies', pillWidth: 133 },
+  { label: 'Shows', path: '/shows', pillWidth: 128 },
+  { label: 'Sports', path: '/sports', pillWidth: 124 },
 ]
 
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
@@ -22,13 +22,13 @@ export default Blits.Component('Navbar', {
     <Element w="1920" h="130" color="{top: 'rgba(11, 11, 11, 0.95)', bottom: 'rgba(11, 11, 11, 0.95)'}" z="100">
       <Text content="JioTV+" size="40" color="#00B3FF" x="64" y="46" />
       <Element :for="(tab, index) in $tabs" key="$tab.path" :x="284 + $index * 130" y="40">
+        <Element x="-16" y="-12" :w="$tab.pillWidth" h="60" :rounded="30" :color="$index === $focusIndex ? '#FFFFFF' : 'rgba(255, 255, 255, 0)'" />
         <Text
           :content="$tab.label"
           size="32"
-          :color="$index === $focusIndex ? '#FFFFFF' : '#AAAAAA'"
+          :color="$index === $focusIndex ? '#0B0B0B' : '#AAAAAA'"
           :scale="$index === $focusIndex && $$hasFocus ? 1.12 : 1"
         />
-        <Element y="46" h="4" :rounded="2" color="#00B3FF" :w="$index === $focusIndex ? 70 : 0" />
       </Element>
     </Element>
   `,
