@@ -3,6 +3,7 @@ import { CARD_W, CARD_GAP, RAIL_VISIBLE_WIDTH } from '../constants/layout.js'
 import { getRailScrollOffset } from '../helpers/scroll.js'
 import { playFocusSound, playSelectSound } from '../helpers/focusSound.js'
 import { getTierConfig } from '../helpers/deviceTier.js'
+import { SCROLL_TRANSITION_DURATION, SCROLL_TRANSITION_EASING } from '../constants/animation.js'
 import PosterCard from './PosterCard.js'
 import FocusBorder from './FocusBorder.js'
 
@@ -10,11 +11,6 @@ import FocusBorder from './FocusBorder.js'
 // the virtualization window (see state.winStart/winEnd below).
 const VISIBLE_CARDS = Math.ceil(RAIL_VISIBLE_WIDTH / (CARD_W + CARD_GAP)) + 1
 const { cardBuffer: CARD_BUFFER } = getTierConfig().window
-
-// Duration/easing for the card track slide when the selected card changes,
-// so Left/Right feels like a smooth glide rather than an instant jump.
-const SCROLL_TRANSITION_DURATION = 300
-const SCROLL_TRANSITION_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)'
 
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
 // 466 = RAIL_TITLE_HEIGHT (76) + CARD_H (390). 1792 = RAIL_VISIBLE_WIDTH.

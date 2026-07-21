@@ -2,6 +2,7 @@ import Blits from '@lightningjs/blits'
 import { HERO_HEIGHT, RAIL_HEIGHT, NAVBAR_HEIGHT } from '../constants/layout.js'
 import { getPageScrollOffset } from '../helpers/scroll.js'
 import { getTierConfig } from '../helpers/deviceTier.js'
+import { SCROLL_TRANSITION_DURATION, SCROLL_TRANSITION_EASING } from '../constants/animation.js'
 import HeroCarousel from './HeroCarousel.js'
 import ContentRail from './ContentRail.js'
 
@@ -23,7 +24,7 @@ export default Blits.Component('PageContainer', {
     ContentRail,
   },
   template: `
-    <Element :y="-$scrollOffset">
+    <Element :y.transition="$scrollTransition">
       <HeroCarousel ref="hero" :slides="$hero" />
       <ContentRail
         :for="(rail, index) in $rails"
@@ -67,6 +68,18 @@ export default Blits.Component('PageContainer', {
      */
     scrollOffset() {
       return getPageScrollOffset(this.sectionIndex, HERO_HEIGHT, RAIL_HEIGHT, NAVBAR_HEIGHT)
+    },
+    /**
+     * Transition config that smoothly slides the page content stack to the
+     * focused section, instead of jumping straight to the target offset
+     * @returns {{value: number, duration: number, easing: string}}
+     */
+    scrollTransition() {
+      return {
+        value: -this.scrollOffset,
+        duration: SCROLL_TRANSITION_DURATION,
+        easing: SCROLL_TRANSITION_EASING,
+      }
     },
   },
   hooks: {

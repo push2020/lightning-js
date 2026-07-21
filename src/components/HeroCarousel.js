@@ -15,7 +15,7 @@ const { heroNeighbors: HERO_NEIGHBORS } = getTierConfig().window
 /**
  * Full-width hero banner. Owns real keyboard focus: Left/Right manually
  * change slides, Enter confirms the Watch Now action. Pagination dots
- * reflect the active slide. No animation, no autoplay.
+ * reflect the active slide. Slides crossfade on change; no autoplay.
  */
 export default Blits.Component('HeroCarousel', {
   components: {
