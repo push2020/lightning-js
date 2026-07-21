@@ -55,9 +55,11 @@ export default Blits.Component('PerfHud', {
      * @returns {void}
      */
     ready() {
-      let frames = 0
+      let last = performance.now()
+      let fpsMs = 0
       let workSum = 0
-      let windowStart = performance.now()
+      let fpsN = 0
+      let fpsClock = last
       let frameStart = 0
       let lastWork = 0
 
@@ -67,18 +69,23 @@ export default Blits.Component('PerfHud', {
       }
 
       const tick = (now) => {
+        const dt = now - last
+        last = now
         frameStart = now
-        frames += 1
-        workSum += lastWork
 
-        const elapsed = now - windowStart
-        if (elapsed >= FLUSH_MS) {
-          this.fps = Math.round((frames * 1000) / elapsed)
-          this.frameTime = (elapsed / frames).toFixed(1)
-          this.workTime = (workSum / frames).toFixed(1)
-          frames = 0
+        fpsMs += dt
+        workSum += lastWork
+        fpsN += 1
+
+        if (now - fpsClock > FLUSH_MS) {
+          const avgFrame = fpsMs / fpsN
+          this.fps = Math.round(1000 / avgFrame)
+          this.frameTime = avgFrame.toFixed(1)
+          this.workTime = (workSum / fpsN).toFixed(1)
+          fpsMs = 0
           workSum = 0
-          windowStart = now
+          fpsN = 0
+          fpsClock = now
         }
 
         // Measure when this frame's main-thread work actually ends.
