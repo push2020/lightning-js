@@ -74,7 +74,7 @@ function buildPkgConfigSource(files) {
 const baseHref = document.getElementById('pkgconfigscript')
 if (baseHref) {
   const url = new URL(baseHref.src)
-  domain = \`\${url.protocol}//\${url.hostname}\${url.port ? ':' + url.port : ''}\`
+  domain = url.href.slice(0, url.href.lastIndexOf('/'))
 }
 
 const filesToLoad = [
@@ -131,7 +131,7 @@ function rewriteIndexHtml() {
   )
   const withLoader = withoutEntryScript.replace(
     '</body>',
-    '        <script id="pkgconfigscript" src="/pkgconfig.js"></script>\n    </body>'
+    '        <script id="pkgconfigscript" src="pkgconfig.js"></script>\n    </body>'
   )
 
   fs.writeFileSync(indexPath, withLoader)

@@ -5,7 +5,8 @@ import blitsVitePlugins from '@lightningjs/blits/vite'
 
 export default defineConfig(({ command, mode, ssrBuild }) => {
   return {
-    base: '/', // Set to your base path if you are deploying to a subdirectory (example: /myApp/)
+    // Set VITE_BASE_PATH when deploying to a subdirectory (example: /myApp/)
+    base: process.env.VITE_BASE_PATH || '/',
     plugins: [...blitsVitePlugins],
     resolve: {
       mainFields: ['browser', 'module', 'jsnext:main', 'jsnext'],
