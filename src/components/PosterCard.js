@@ -1,5 +1,4 @@
 import Blits from '@lightningjs/blits'
-import FocusBorder from './FocusBorder.js'
 import SkeletonCard from './SkeletonCard.js'
 
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
@@ -7,17 +6,17 @@ import SkeletonCard from './SkeletonCard.js'
 // (260x390 total card), matching constants/layout.js CARD_W/CARD_H.
 
 /**
- * A single OTT poster card: image, title and genre. Purely prop-driven - the
- * parent rail owns real keyboard focus and tells this card when it is
- * selected, which shows a border (see FocusBorder.js). No animation.
+ * A single OTT poster card: image, title and genre. Purely prop-driven and
+ * has no notion of focus - the parent rail owns real keyboard focus and
+ * renders a single fixed focus border over whichever card slides into the
+ * selected slot (see ContentRail.js). No animation.
  */
 export default Blits.Component('PosterCard', {
   components: {
-    FocusBorder,
     SkeletonCard,
   },
   template: `
-    <Element :w="$w" :h="$h" :zIndex="$focused ? 10 : 1">
+    <Element :w="$w" :h="$h">
       <Element
         :w="$w"
         h="300"
@@ -32,7 +31,6 @@ export default Blits.Component('PosterCard', {
         </Element>
       </Element>
       <SkeletonCard :show="!$imageLoaded" :w="$w" h="300" />
-      <FocusBorder :active="$focused" :w="$w" :h="$h" />
       <Element y="314" :w="$w">
         <Text :content="$title" size="26" color="#FFFFFF" maxwidth="$w" maxlines="1" />
         <Text y="32" :content="$genre" size="20" color="#AAAAAA" maxwidth="$w" maxlines="1" />
@@ -44,7 +42,6 @@ export default Blits.Component('PosterCard', {
     genre: '',
     image: '',
     progress: undefined,
-    focused: false,
     w: 260,
     h: 390,
   },

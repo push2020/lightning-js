@@ -4,20 +4,31 @@ import { getRailScrollOffset } from '../helpers/scroll.js'
 import { playFocusSound, playSelectSound } from '../helpers/focusSound.js'
 import { getTierConfig } from '../helpers/deviceTier.js'
 import PosterCard from './PosterCard.js'
+import FocusBorder from './FocusBorder.js'
 
 // How many cards fit in the rail's visible viewport at once, used to size
 // the virtualization window (see state.winStart/winEnd below).
 const VISIBLE_CARDS = Math.ceil(RAIL_VISIBLE_WIDTH / (CARD_W + CARD_GAP)) + 1
 const { cardBuffer: CARD_BUFFER } = getTierConfig().window
 
+// Duration/easing for the card track slide when the selected card changes,
+// so Left/Right feels like a smooth glide rather than an instant jump.
+const SCROLL_TRANSITION_DURATION = 300
+const SCROLL_TRANSITION_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)'
+
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
 // 466 = RAIL_TITLE_HEIGHT (76) + CARD_H (390). 1792 = RAIL_VISIBLE_WIDTH.
 // 288 = CARD_W (260) + CARD_GAP (28). Keep these in sync with constants/layout.js.
 // The card track sits in a slightly taller/wider box than the cards themselves
-// (24px vertical buffer, 20px left inset) so the focused card's border never
+// (24px vertical buffer, 20px left inset) so the fixed focus border never
 // gets clipped by the track boundary.
 // The row starts at y="52" (52 + 24 buffer = 76), leaving extra padding
 // between the rail title and the first row of cards.
+// The focus border is rendered once, fixed at the leftmost card slot
+// (x="20" y="24", matching the card track's own inset) rather than on
+// whichever card is selected - getRailScrollOffset() always slides the
+// selected card into that same slot, so visually the border stays put and
+// the card track glides underneath it.
 
 /**
  * A horizontally scrolling rail of poster cards. The rail itself owns real
@@ -27,12 +38,13 @@ const { cardBuffer: CARD_BUFFER } = getTierConfig().window
 export default Blits.Component('ContentRail', {
   components: {
     PosterCard,
+    FocusBorder,
   },
   template: `
     <Element h="466">
       <Text :content="$title" size="32" :color="$$hasFocus ? '#FFFFFF' : '#AAAAAA'" />
       <Element y="52" w="1812" h="438" clipping="true">
-        <Element :x="-$scrollOffset">
+        <Element :x.transition="$trackTransition">
           <PosterCard
             :for="(item, index) in $items"
             :range="{from: $winStart, to: $winEnd}"
@@ -43,11 +55,11 @@ export default Blits.Component('ContentRail', {
             :genre="$item.genre"
             :image="$item.image"
             :progress="$item.progress"
-            :focused="$$hasFocus && $index === $selectedIndex"
             w="260"
             h="390"
           />
         </Element>
+        <FocusBorder :active="$$hasFocus" x="20" y="24" w="260" h="390" zIndex="10" />
       </Element>
     </Element>
   `,
@@ -78,6 +90,20 @@ export default Blits.Component('ContentRail', {
        */
       winEnd: VISIBLE_CARDS + CARD_BUFFER,
     }
+  },
+  computed: {
+    /**
+     * Transition config that smoothly slides the card track to reveal the
+     * selected card, instead of jumping straight to the target offset
+     * @returns {{value: number, duration: number, easing: string}}
+     */
+    trackTransition() {
+      return {
+        value: -this.scrollOffset,
+        duration: SCROLL_TRANSITION_DURATION,
+        easing: SCROLL_TRANSITION_EASING,
+      }
+    },
   },
   input: {
     /**
