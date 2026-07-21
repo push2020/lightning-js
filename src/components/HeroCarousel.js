@@ -1,6 +1,9 @@
 import Blits from '@lightningjs/blits'
 import { playFocusSound, playSelectSound } from '../helpers/focusSound.js'
+import { getTierConfig } from '../helpers/deviceTier.js'
 import HeroSlide from './HeroSlide.js'
+
+const { heroNeighbors: HERO_NEIGHBORS } = getTierConfig().window
 
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
 // 1920x880 matches constants/layout.js STAGE_W/HERO_HEIGHT, x="64" matches
@@ -22,6 +25,7 @@ export default Blits.Component('HeroCarousel', {
     <Element w="1920" h="880">
       <HeroSlide
         :for="(slide, index) in $slides"
+        :range="{from: $slideWinStart, to: $slideWinEnd}"
         key="$slide.id"
         :image="$slide.image"
         :title="$slide.title"
@@ -64,6 +68,16 @@ export default Blits.Component('HeroCarousel', {
        * @type {number}
        */
       currentIndex: 0,
+      /**
+       * Index of the first hero slide mounted by the :range virtualization window
+       * @type {number}
+       */
+      slideWinStart: 0,
+      /**
+       * Index one past the last hero slide mounted by the :range virtualization window
+       * @type {number}
+       */
+      slideWinEnd: HERO_NEIGHBORS + 1,
     }
   },
   input: {
@@ -93,12 +107,15 @@ export default Blits.Component('HeroCarousel', {
   },
   methods: {
     /**
-     * Advances to the given slide index
+     * Advances to the given slide index, sliding the mount window so only
+     * the active slide and its immediate neighbors are instantiated
      * @param {number} index - target slide index
      * @returns {void}
      */
     goToSlide(index) {
       this.currentIndex = index
+      this.slideWinStart = Math.max(0, index - HERO_NEIGHBORS)
+      this.slideWinEnd = index + HERO_NEIGHBORS + 1
       playFocusSound()
     },
   },

@@ -12,7 +12,7 @@ import Blits from '@lightningjs/blits'
 export default Blits.Component('HeroSlide', {
   template: `
     <Element w="1920" h="880" :alpha="$active ? 1 : 0">
-      <Element w="1920" h="880" :src="$image" fit="cover" color="#ffffff" />
+      <Element w="1920" h="880" :src="$imageSrc" fit="cover" color="#ffffff" />
       <Element w="1920" h="880" color="{bottom: '#0B0B0B', top: 'rgba(11, 11, 11, 0.1)'}" />
       <Element w="1920" h="260" y="620" color="{bottom: '#0B0B0B', top: 'rgba(11, 11, 11, 0)'}" />
       <Element y="520" w="900" x="64">
@@ -36,5 +36,16 @@ export default Blits.Component('HeroSlide', {
     subtitle: '',
     description: '',
     active: false,
+  },
+  computed: {
+    /**
+     * Image src descriptor with keepAlive set, so the hero texture survives
+     * this slide's destruction (e.g. on tab switch) and is reused instead of
+     * being re-fetched/decoded/re-uploaded on remount
+     * @returns {{src: string, keepAlive: boolean}}
+     */
+    imageSrc() {
+      return { src: this.image, keepAlive: true }
+    },
   },
 })

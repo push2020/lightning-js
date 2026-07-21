@@ -1,8 +1,12 @@
 import Blits from '@lightningjs/blits'
 import { HERO_HEIGHT, RAIL_HEIGHT, NAVBAR_HEIGHT } from '../constants/layout.js'
 import { getPageScrollOffset } from '../helpers/scroll.js'
+import { getTierConfig } from '../helpers/deviceTier.js'
 import HeroCarousel from './HeroCarousel.js'
 import ContentRail from './ContentRail.js'
+
+const { railBufferUp: RAIL_BUFFER_UP, railBufferDown: RAIL_BUFFER_DOWN, railVisibleRows: RAIL_VISIBLE_ROWS } =
+  getTierConfig().window
 
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
 // x="64" matches CONTENT_PADDING_X, 880 + index * 506 matches HERO_HEIGHT / RAIL_HEIGHT.
@@ -23,6 +27,7 @@ export default Blits.Component('PageContainer', {
       <HeroCarousel ref="hero" :slides="$hero" />
       <ContentRail
         :for="(rail, index) in $rails"
+        :range="{from: $railWinStart, to: $railWinEnd}"
         key="$rail.id"
         :ref="'rail' + $index"
         x="64"
@@ -43,6 +48,16 @@ export default Blits.Component('PageContainer', {
        * @type {number}
        */
       sectionIndex: 0,
+      /**
+       * Index of the first rail mounted by the :range virtualization window
+       * @type {number}
+       */
+      railWinStart: 0,
+      /**
+       * Index one past the last rail mounted by the :range virtualization window
+       * @type {number}
+       */
+      railWinEnd: RAIL_VISIBLE_ROWS + RAIL_BUFFER_DOWN,
     }
   },
   computed: {
@@ -71,6 +86,7 @@ export default Blits.Component('PageContainer', {
     down() {
       if (this.sectionIndex >= this.rails.length) return
       this.sectionIndex++
+      this.updateRailWindow()
       this.focusCurrentSection()
     },
     /**
@@ -83,6 +99,7 @@ export default Blits.Component('PageContainer', {
         return
       }
       this.sectionIndex--
+      this.updateRailWindow()
       this.focusCurrentSection()
     },
     /**
@@ -102,6 +119,17 @@ export default Blits.Component('PageContainer', {
       const ref = this.sectionIndex === 0 ? 'hero' : `rail${this.sectionIndex - 1}`
       const target = this.$select(ref)
       if (target) target.$focus()
+    },
+    /**
+     * Slides the rail mount window so only rails near the focused section are
+     * instantiated. Must run before focusCurrentSection() so the target rail
+     * is guaranteed mounted when $select() looks for it.
+     * @returns {void}
+     */
+    updateRailWindow() {
+      const railIndex = this.sectionIndex - 1
+      this.railWinStart = Math.max(0, railIndex - RAIL_BUFFER_UP)
+      this.railWinEnd = railIndex + RAIL_VISIBLE_ROWS + RAIL_BUFFER_DOWN
     },
   },
 })

@@ -1,4 +1,5 @@
 import { buildPosterImages, buildHeroImages } from './images.js'
+import { getTierConfig } from '../helpers/deviceTier.js'
 
 const ADJECTIVES = [
   'Silent',
@@ -81,7 +82,8 @@ function generateTitle(seed) {
  * @returns {{id: string, title: string, items: object[]}} the generated rail
  */
 export function createRail({ id, title, genres, count = 26, withProgress = false }) {
-  const images = buildPosterImages(id, count)
+  const { posterW, posterH } = getTierConfig().images
+  const images = buildPosterImages(id, count, posterW, posterH)
   const seedBase = hashString(id)
   const items = []
   for (let i = 0; i < count; i++) {
@@ -104,7 +106,8 @@ export function createRail({ id, title, genres, count = 26, withProgress = false
  * @returns {object[]} hero slide data including generated background images
  */
 export function createHeroSlides({ id, slides }) {
-  const images = buildHeroImages(id, slides.length)
+  const { heroW, heroH } = getTierConfig().images
+  const images = buildHeroImages(id, slides.length, heroW, heroH)
   return slides.map((slide, index) => ({
     id: `${id}-hero-${index}`,
     image: images[index],

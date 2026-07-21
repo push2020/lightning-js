@@ -1,8 +1,14 @@
 import Blits from '@lightningjs/blits'
-import { CARD_W, CARD_GAP } from '../constants/layout.js'
+import { CARD_W, CARD_GAP, RAIL_VISIBLE_WIDTH } from '../constants/layout.js'
 import { getRailScrollOffset } from '../helpers/scroll.js'
 import { playFocusSound, playSelectSound } from '../helpers/focusSound.js'
+import { getTierConfig } from '../helpers/deviceTier.js'
 import PosterCard from './PosterCard.js'
+
+// How many cards fit in the rail's visible viewport at once, used to size
+// the virtualization window (see state.winStart/winEnd below).
+const VISIBLE_CARDS = Math.ceil(RAIL_VISIBLE_WIDTH / (CARD_W + CARD_GAP)) + 1
+const { cardBuffer: CARD_BUFFER } = getTierConfig().window
 
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
 // 466 = RAIL_TITLE_HEIGHT (76) + CARD_H (390). 1792 = RAIL_VISIBLE_WIDTH.
@@ -29,6 +35,7 @@ export default Blits.Component('ContentRail', {
         <Element :x="-$scrollOffset">
           <PosterCard
             :for="(item, index) in $items"
+            :range="{from: $winStart, to: $winEnd}"
             key="$item.id"
             y="24"
             :x="20 + $index * 288"
@@ -60,6 +67,16 @@ export default Blits.Component('ContentRail', {
        * @type {number}
        */
       scrollOffset: 0,
+      /**
+       * Index of the first card mounted by the :range virtualization window
+       * @type {number}
+       */
+      winStart: 0,
+      /**
+       * Index one past the last card mounted by the :range virtualization window
+       * @type {number}
+       */
+      winEnd: VISIBLE_CARDS + CARD_BUFFER,
     }
   },
   input: {
@@ -93,11 +110,15 @@ export default Blits.Component('ContentRail', {
   },
   methods: {
     /**
-     * Recalculates the scroll offset so the selected card stays comfortably in view
+     * Recalculates the scroll offset so the selected card stays comfortably
+     * in view, and slides the mount window so only cards near the selection
+     * are instantiated
      * @returns {void}
      */
     updateScroll() {
       this.scrollOffset = getRailScrollOffset(this.selectedIndex, CARD_W, CARD_GAP)
+      this.winStart = Math.max(0, this.selectedIndex - CARD_BUFFER)
+      this.winEnd = this.selectedIndex + VISIBLE_CARDS + CARD_BUFFER
     },
   },
 })
