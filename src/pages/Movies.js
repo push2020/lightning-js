@@ -1,6 +1,6 @@
 import Blits from '@lightningjs/blits'
 import PageContainer from '../components/PageContainer.js'
-import moviesData from '../data/movies.js'
+import getMoviesData from '../data/movies.js'
 
 /**
  * Movies page: hero carousel plus 10 movie rails (Trending, Blockbusters,
@@ -12,6 +12,7 @@ export default Blits.Component('Movies', {
   },
   template: '<PageContainer :hero="$hero" :rails="$rails" />',
   state() {
+    const moviesData = getMoviesData()
     return {
       /**
        * Hero carousel slides for the Movies page

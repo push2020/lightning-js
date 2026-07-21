@@ -1,6 +1,6 @@
 import Blits from '@lightningjs/blits'
 import PageContainer from '../components/PageContainer.js'
-import showsData from '../data/shows.js'
+import getShowsData from '../data/shows.js'
 
 /**
  * Shows page: hero carousel plus 10 TV show rails (Trending, Binge-Worthy,
@@ -12,6 +12,7 @@ export default Blits.Component('Shows', {
   },
   template: '<PageContainer :hero="$hero" :rails="$rails" />',
   state() {
+    const showsData = getShowsData()
     return {
       /**
        * Hero carousel slides for the Shows page

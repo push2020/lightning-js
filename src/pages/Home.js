@@ -1,6 +1,6 @@
 import Blits from '@lightningjs/blits'
 import PageContainer from '../components/PageContainer.js'
-import homeData from '../data/home.js'
+import getHomeData from '../data/home.js'
 
 /**
  * Home page: hero carousel plus 10 content rails (Trending, Popular,
@@ -12,6 +12,7 @@ export default Blits.Component('Home', {
   },
   template: '<PageContainer :hero="$hero" :rails="$rails" />',
   state() {
+    const homeData = getHomeData()
     return {
       /**
        * Hero carousel slides for the Home page

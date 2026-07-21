@@ -3,10 +3,6 @@ import Navbar from './components/Navbar.js'
 import LoadingScreen from './components/LoadingScreen.js'
 import PerfHud from './components/PerfHud.js'
 import ExitConfirmModal from './components/ExitConfirmModal.js'
-import Home from './pages/Home.js'
-import Movies from './pages/Movies.js'
-import Shows from './pages/Shows.js'
-import Sports from './pages/Sports.js'
 
 const BOOT_DELAY = 600
 
@@ -18,6 +14,12 @@ const BOOT_DELAY = 600
 // "keepAlive" view through the back-navigation path. With inHistory:false
 // too, a kept-alive view was never destroyed AND never reachable again -
 // every tab switch orphaned the previous page's view instead of freeing it.
+//
+// Blits' RouteOptions type models keepAlive/reuseComponent as a discriminated
+// union of two non-default combos, with no variant for explicitly setting
+// both to false - which is exactly the (valid, intentional) config below.
+/** @type {import('@lightningjs/blits').RouteOptions} */
+// @ts-expect-error - both explicitly false is valid at runtime; see comment above
 const TAB_ROUTE_OPTIONS = {
   passFocus: false,
   inHistory: false,
@@ -55,11 +57,15 @@ export default Blits.Application({
       <ExitConfirmModal ref="exitConfirm" :open="$showExitConfirm" />
     </Element>
   `,
+  // Each page component (and the content-generation work its data file does
+  // at module load - see data/*.js) is dynamically imported so it's only
+  // parsed/evaluated once the user actually navigates to that tab, instead
+  // of all four pages' worth of work happening upfront at boot.
   routes: [
-    { path: '/', component: Home, options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
-    { path: '/movies', component: Movies, options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
-    { path: '/shows', component: Shows, options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
-    { path: '/sports', component: Sports, options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
+    { path: '/', component: () => import('./pages/Home.js'), options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
+    { path: '/movies', component: () => import('./pages/Movies.js'), options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
+    { path: '/shows', component: () => import('./pages/Shows.js'), options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
+    { path: '/sports', component: () => import('./pages/Sports.js'), options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
   ],
   state() {
     return {
