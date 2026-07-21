@@ -9,11 +9,17 @@ import { SCROLL_TRANSITION_DURATION, SCROLL_TRANSITION_EASING } from '../constan
 // least once, or they stay blank forever - see the TAB_TRANSITION comment in
 // App.js: a text node whose alpha is still 0 (or animating up from 0) the
 // first time it tries to rasterize never recovers, even once alpha reaches 1
-// later. $copyAlpha works around this by holding the copy at alpha 1 for the
-// single frame before this slide's `ready` hook fires (letting its Text
-// nodes rasterize while visible), then dropping to the real active/inactive
-// value. That one frame is a barely-perceptible blip in the copy block only,
-// not the whole slide - a fair trade for text that reliably shows up.
+// later. $copyAlpha works around this by holding the copy at alpha 1 until
+// two real animation frames have painted after this slide's `ready` hook
+// fires, then dropping to the real active/inactive value. Blits' `ready`
+// only means the template has been spawned, not that the browser has
+// actually painted it - a single setTimeout/microtask gap (as this used
+// previously) can land before that first paint, especially once the app is
+// mid-scroll rather than freshly booted, which left neighbor slides snapping
+// to alpha 0 before their text ever rasterized. Waiting two rAFs guarantees a
+// painted frame at alpha 1 has happened first. That's a barely-perceptible
+// blip in the copy block only, not the whole slide - a fair trade for text
+// that reliably shows up.
 
 /**
  * A single hero banner slide: full-bleed background image, gradient overlay
@@ -53,9 +59,9 @@ export default Blits.Component('HeroSlide', {
   state() {
     return {
       /**
-       * Whether this slide's first render has completed. Starts false so the
-       * copy block's Text nodes get one frame to rasterize while visible -
-       * see the note above.
+       * Whether this slide's copy block has had a guaranteed painted frame
+       * to rasterize its Text nodes while visible. Starts false - see the
+       * note above.
        * @type {boolean}
        */
       mounted: false,
@@ -101,13 +107,27 @@ export default Blits.Component('HeroSlide', {
   },
   hooks: {
     /**
-     * Marks this slide as mounted once its first render has completed, so
-     * the copy block settles to its real active/inactive alpha and
-     * subsequent image crossfades animate instead of snapping
+     * Marks this slide as mounted once two real animation frames have
+     * painted after the template is spawned, so the copy block settles to
+     * its real active/inactive alpha only after its Text nodes have
+     * genuinely rasterized while visible, and subsequent image crossfades
+     * animate instead of snapping
      * @returns {void}
      */
     ready() {
-      this.mounted = true
+      this._revealRafId = requestAnimationFrame(() => {
+        this._revealRafId = requestAnimationFrame(() => {
+          this.mounted = true
+        })
+      })
+    },
+    /**
+     * Cancels the pending reveal frame if this slide is destroyed before it
+     * completes, e.g. scrolled back out of the :range window quickly
+     * @returns {void}
+     */
+    destroy() {
+      cancelAnimationFrame(this._revealRafId)
     },
   },
 })
