@@ -2,8 +2,11 @@ import Blits from '@lightningjs/blits'
 import SkeletonCard from './SkeletonCard.js'
 
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
-// Poster image area is a fixed 260x300, with a 90px title/genre strip below
-// (260x390 total card), matching constants/layout.js CARD_W/CARD_H.
+// Card total size is w x h, with the image occupying the top imageH pixels
+// and a title/genre strip filling the rest - matching constants/layout.js
+// CARD_TYPES. `rounded` is applied to the poster image (and its skeleton) so
+// the same card can render as a square-cornered poster, a lightly-rounded
+// landscape thumbnail, or (when w === imageH and rounded === w/2) a circle.
 
 /**
  * A single OTT poster card: image, title and genre. Purely prop-driven and
@@ -19,19 +22,20 @@ export default Blits.Component('PosterCard', {
     <Element :w="$w" :h="$h">
       <Element
         :w="$w"
-        h="300"
+        :h="$imageH"
         color="#ffffff"
         :src="$image"
         fit="cover"
+        :rounded="$rounded"
         @loaded="$onImageLoaded"
         @error="$onImageError"
       >
-        <Element :show="$hasProgress" y="294" :w="$w" h="6" color="rgba(255, 255, 255, 0.25)">
+        <Element :show="$hasProgress" :y="$imageH - 6" :w="$w" h="6" color="rgba(255, 255, 255, 0.25)">
           <Element h="6" color="#00B3FF" :w="$w * $progressValue" />
         </Element>
       </Element>
-      <SkeletonCard :show="!$imageLoaded" :w="$w" h="300" />
-      <Element y="314" :w="$w">
+      <SkeletonCard :show="!$imageLoaded" :w="$w" :h="$imageH" :rounded="$rounded" />
+      <Element :y="$imageH + 14" :w="$w">
         <Text :content="$title" size="26" color="#FFFFFF" maxwidth="$w" maxlines="1" />
         <Text y="32" :content="$genre" size="20" color="#AAAAAA" maxwidth="$w" maxlines="1" />
       </Element>
@@ -44,6 +48,8 @@ export default Blits.Component('PosterCard', {
     progress: undefined,
     w: 260,
     h: 390,
+    imageH: 300,
+    rounded: 0,
   },
   state() {
     return {

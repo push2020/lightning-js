@@ -4,11 +4,12 @@ import Blits from '@lightningjs/blits'
 
 /**
  * Placeholder block shown in place of a poster image while it is still loading.
- * Flat/square-cornered to match the card's own shape (see FocusBorder.js for why).
+ * Takes the same `rounded` corner radius as the poster image it stands in
+ * for, so a circular/landscape card's skeleton matches its final shape.
  */
 export default Blits.Component('SkeletonCard', {
   template: `
-    <Element :w="$w" :h="$h" color="#1C1C1C">
+    <Element :w="$w" :h="$h" color="#1C1C1C" :rounded="$rounded">
       <Element x="16" y="16" :w="$w - 32" h="10" color="#2A2A2A" />
       <Element x="16" y="40" :w="$w - 90" h="10" color="#2A2A2A" />
     </Element>
@@ -16,5 +17,6 @@ export default Blits.Component('SkeletonCard', {
   props: {
     w: 260,
     h: 300,
+    rounded: 0,
   },
 })

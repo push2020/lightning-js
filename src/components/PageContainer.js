@@ -1,5 +1,5 @@
 import Blits from '@lightningjs/blits'
-import { HERO_HEIGHT, RAIL_HEIGHT, NAVBAR_HEIGHT } from '../constants/layout.js'
+import { HERO_HEIGHT, RAIL_HEIGHT, NAVBAR_HEIGHT, CARD_TYPE_ORDER } from '../constants/layout.js'
 import { getPageScrollOffset } from '../helpers/scroll.js'
 import { getTierConfig } from '../helpers/deviceTier.js'
 import { SCROLL_TRANSITION_DURATION, SCROLL_TRANSITION_EASING } from '../constants/animation.js'
@@ -35,6 +35,7 @@ export default Blits.Component('PageContainer', {
         :y="880 + $index * 506"
         :title="$rail.title"
         :items="$rail.items"
+        :cardType="$railCardTypes[$index]"
       />
     </Element>
   `,
@@ -62,6 +63,15 @@ export default Blits.Component('PageContainer', {
     }
   },
   computed: {
+    /**
+     * Card shape for each rail, cycling through CARD_TYPE_ORDER (portrait,
+     * landscape, circular, ...) so consecutive rails alternate presentation
+     * of the same underlying item data.
+     * @returns {string[]}
+     */
+    railCardTypes() {
+      return this.rails.map((_, index) => CARD_TYPE_ORDER[index % CARD_TYPE_ORDER.length])
+    },
     /**
      * Vertical pixel offset needed to bring the focused section into view
      * @returns {number}

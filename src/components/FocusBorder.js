@@ -5,10 +5,10 @@ import Blits from '@lightningjs/blits'
 // intentionally hardcoded literals (kept in sync with constants/theme.js by convention).
 
 /**
- * Decorative focus indicator overlaid on top of a card: a plain flat border,
- * shown when `active` is true. No transition/animation. The border is drawn
- * outset from the card by 8px on every side (x/y/w/h below), so it never
- * touches the card artwork.
+ * Decorative focus indicator overlaid on top of a card: a plain flat (or
+ * rounded, via `rounded`) border, shown when `active` is true. No
+ * transition/animation. The border is drawn outset from the card by 8px on
+ * every side (x/y/w/h below), so it never touches the card artwork.
  */
 export default Blits.Component('FocusBorder', {
   template: `
@@ -18,6 +18,7 @@ export default Blits.Component('FocusBorder', {
       :w="$w + 16"
       :h="$h + 16"
       :show="$active"
+      :rounded="$rounded"
       :border="{w: 4, color: '#ffffff'}"
     />
   `,
@@ -25,5 +26,6 @@ export default Blits.Component('FocusBorder', {
     active: false,
     w: 260,
     h: 390,
+    rounded: 0,
   },
 })
