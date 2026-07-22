@@ -11,19 +11,19 @@ A TV-app UI (Home / Movies / Shows / Sports) built with **Blits**, a component f
 - Every page is: **one hero banner carousel** + **a stack of horizontal "rails"** (rows of poster cards), scrolling vertically.
 - A remote control has 6 buttons that matter: **Left / Right / Up / Down / Enter / Back**. Nothing is clicked with a mouse.
 - At any moment, exactly **one component on screen "has focus"** and is the thing reacting to button presses — like a cursor, except it's a whole component instead of a blinking line.
-- The app detects a rough **device tier** (low/mid/high) at boot and uses it to scale render quality and how many off-screen cards/rails/slides are kept mounted, so the same code runs acceptably on a low-end TV and a high-end one.
+- The app uses a single **low-end tier** config to set render quality and how many off-screen cards/rails/slides are kept mounted, since low-end settings run acceptably on both constrained and high-end hardware.
 
 ## Folder structure
 
 ```
 src/
-  index.js            Boots the app (screen size, device-tier launch settings, keymap)
+  index.js            Boots the app (screen size, low-end tier launch settings, keymap)
   App.js              Root component: router + navbar + boot splash + exit-confirmation dialog
   pages/              One file per page (Home, Movies, Shows, Sports)
   components/         Reusable UI pieces (see below)
   data/                Generated dummy content for each page
   constants/           Shared numbers (layout, theme colors/fonts, transition timing)
-  helpers/             Small pure functions (scroll math, device-tier config, focus sound)
+  helpers/             Small pure functions (scroll math, tier config, focus sound)
 ```
 
 ### components/
@@ -48,7 +48,7 @@ Each page (`Home.js`, `Movies.js`, `Shows.js`, `Sports.js`) is intentionally tin
 
 ### data/
 
-- `contentFactory.js` — the two functions that build fake content: `createRail(...)` (generates N poster cards with made-up titles like "Crimson Wolves") and `createHeroSlides(...)` (attaches a background image to each hero slide). Both read the current device tier's `images` config (`getTierConfig().images`) to request appropriately-sized poster/hero images for the device.
+- `contentFactory.js` — the two functions that build fake content: `createRail(...)` (generates N poster cards with made-up titles like "Crimson Wolves") and `createHeroSlides(...)` (attaches a background image to each hero slide). Both read the tier's `images` config (`getTierConfig().images`) to request appropriately-sized poster/hero images.
 - `images.js` — turns a rail/page id + width/height into a Lorem Picsum URL, cycling through categories (mountains, ocean, animals, etc.) so images don't repeat. It's tier-agnostic — the caller (`contentFactory.js`) decides what size to ask for.
 - `home.js` / `movies.js` / `shows.js` / `sports.js` — each just calls `createRail`/`createHeroSlides` to declare that page's hero slides and list of rails. **This is the file to edit if you want to add/rename/remove rails or change hero copy.**
 
@@ -75,7 +75,7 @@ template: `
 - **`ExitConfirmModal`**: instead of toggling the dialog card's alpha, it's moved off-stage horizontally (`x=1920`) to hide it, so its Text children are always painted at alpha 1. Only the Text-free dim backdrop uses a plain alpha toggle.
 - **`HeroSlide`**: see the two-`requestAnimationFrame` reveal logic below.
 
-## How virtualization works (device-tier aware)
+## How virtualization works (tier-based)
 
 To avoid keeping the entire page's worth of hero slides / rails / cards mounted at once, three components only mount a small window of items around whatever's currently focused, using Blits' `:range="{from, to}"` directive on a `:for` loop:
 
@@ -83,12 +83,9 @@ To avoid keeping the entire page's worth of hero slides / rails / cards mounted 
 - **`ContentRail`** — mounts `[winStart, winEnd)`, sized to fit the visible viewport width plus a `cardBuffer` of extra cards on each side. Window is recomputed in `updateScroll()`.
 - **`PageContainer`** — mounts `[railWinStart, railWinEnd)` rails, sized to `railVisibleRows` plus `railBufferUp`/`railBufferDown` extra rails above/below. Window is recomputed in `updateRailWindow()`, which must run *before* focusing a rail (`focusCurrentSection()`), since a rail outside the window isn't in the tree yet and can't be found by `$select()`.
 
-The buffer/window sizes above (`heroNeighbors`, `cardBuffer`, `railBufferUp`, `railBufferDown`, `railVisibleRows`) — plus poster/hero image resolution and Lightning's launch-time render settings (`renderQuality`, `maxFPS`, `viewportMargin`, `gpuMemory`) — all come from **`helpers/deviceTier.js`**, which detects a device tier once at load:
+The buffer/window sizes above (`heroNeighbors`, `cardBuffer`, `railBufferUp`, `railBufferDown`, `railVisibleRows`) — plus poster/hero image resolution and Lightning's launch-time render settings (`renderQuality`, `maxFPS`, `viewportMargin`, `gpuMemory`) — all come from **`helpers/deviceTier.js`**, which exposes a single low-end tier config used for every device (it runs acceptably on constrained and high-end hardware alike, so there's no need to detect device capability).
 
-1. A `?tier=low|mid|high` URL query param always wins (for local testing).
-2. Otherwise it sniffs `navigator.userAgent`: VIDAA (Hisense) → `low`, Tizen (Samsung) → `high`, webOS/Android TV/Fire TV/BRAVIA → `mid`, anything else → `mid`.
-
-`getLaunchSettings()` feeds `Blits.Launch()` in `index.js`; `getTierConfig()` feeds the per-component window sizes and `contentFactory.js`'s image dimensions. Lower tiers get smaller/fewer buffered items and lower-resolution images to keep memory and GPU cost down on weaker hardware.
+`getLaunchSettings()` feeds `Blits.Launch()` in `index.js`; `getTierConfig()` feeds the per-component window sizes and `contentFactory.js`'s image dimensions.
 
 ## How remote-control focus & navigation works
 

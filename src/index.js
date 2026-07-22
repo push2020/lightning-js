@@ -10,8 +10,7 @@ Blits.Launch(App, 'app', {
   canvasColor: COLORS.background,
   enableMouse: true,
   // renderQuality, maxFPS, viewportMargin and gpuMemory come from the
-  // detected device tier (see helpers/deviceTier.js) - Vidaa-class TVs get a
-  // lower-cost config, Tizen-class TVs get full fidelity.
+  // low-end tier config (see helpers/deviceTier.js), used for all devices.
   ...getLaunchSettings(),
   // Keyboard Backspace (8) and Escape (27) already map to 'back' by default.
   // These add the dedicated hardware Back button's keyCode on common TV
