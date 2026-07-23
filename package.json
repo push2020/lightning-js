@@ -1,0 +1,21 @@
+{
+  "name": "my-blits-app",
+  "version": "0.1.0",
+  "description": "My Blits App",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "npm run dev",
+    "build": "vite build && node scriptloader.js",
+    "dev": "vite dev --host"
+  },
+  "devDependencies": {
+    "@lightningjs/msdf-generator": "^1.1.1",
+    "gh-pages": "^6.3.0",
+    "prettier": "^3.3.3",
+    "vite": "^8.1.4"
+  },
+  "dependencies": {
+    "@lightningjs/blits": "^2.7.0"
+  }
+}
