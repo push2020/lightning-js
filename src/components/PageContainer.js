@@ -10,7 +10,10 @@ const { railBufferUp: RAIL_BUFFER_UP, railBufferDown: RAIL_BUFFER_DOWN, railVisi
   getTierConfig().window
 
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
-// x="64" matches CONTENT_PADDING_X, 880 + index * 506 matches HERO_HEIGHT / RAIL_HEIGHT.
+// 880 + index * 506 matches HERO_HEIGHT / RAIL_HEIGHT. ContentRail sits at
+// x="0" (not CONTENT_PADDING_X) because its card track is full-bleed,
+// edge-to-edge like HeroCarousel - ContentRail applies its own x="64" inset
+// internally, just to its title text, to line up with the hero's title.
 
 /**
  * Generic OTT page layout: a hero carousel followed by any number of content
@@ -31,7 +34,6 @@ export default Blits.Component('PageContainer', {
         :range="{from: $railWinStart, to: $railWinEnd}"
         key="$rail.id"
         :ref="'rail' + $index"
-        x="64"
         :y="880 + $index * 506"
         :title="$rail.title"
         :items="$rail.items"

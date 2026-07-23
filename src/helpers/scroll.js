@@ -1,16 +1,21 @@
 /**
  * Calculates the horizontal scroll offset needed to bring the focused card to
- * the first (leftmost) visible position in the rail window. Always pins the
- * focused card to the start - even the last card in the rail - so trailing
- * cards never stay bunched up against the right edge; any remaining space
- * to the right of the last card is simply left blank.
+ * its slot in the rail window, peek pixels in from the left edge - the same
+ * slot for every card, including the first, so the row always starts at its
+ * usual position at rest. Only once you've scrolled past the first card does
+ * the previous card's edge start peeking/cutting off at the rail's true left
+ * edge (a "peek" carousel), instead of scrolling fully out of view. Pins
+ * every card to that same slot, even the last one in the rail, so trailing
+ * cards never bunch up against the right edge; any remaining space past the
+ * last card is simply left blank.
  * @param {number} index - index of the currently focused card
  * @param {number} cardWidth - width of a single card in pixels
  * @param {number} gap - horizontal spacing between cards in pixels
+ * @param {number} peek - pixels of the previous card left peeking at the rail's left edge
  * @returns {number} scroll offset in pixels
  */
-export function getRailScrollOffset(index, cardWidth, gap) {
-  return Math.max(index * (cardWidth + gap), 0)
+export function getRailScrollOffset(index, cardWidth, gap, peek) {
+  return index * (cardWidth + gap) - peek
 }
 
 // Extra breathing room kept between the fixed navbar overlay and a scrolled-to

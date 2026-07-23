@@ -66,6 +66,7 @@ export default Blits.Application({
     { path: '/movies', component: () => import('./pages/Movies.js'), options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
     { path: '/shows', component: () => import('./pages/Shows.js'), options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
     { path: '/sports', component: () => import('./pages/Sports.js'), options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
+    { path: '/fps-test', component: () => import('./pages/FpsTest.js'), options: TAB_ROUTE_OPTIONS, transition: TAB_TRANSITION },
   ],
   state() {
     return {

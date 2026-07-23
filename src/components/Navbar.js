@@ -6,6 +6,7 @@ const TABS = [
   { label: 'Movies', path: '/movies', pillWidth: 133 },
   { label: 'Shows', path: '/shows', pillWidth: 128 },
   { label: 'Sports', path: '/sports', pillWidth: 124 },
+  { label: 'FPS Test', path: '/fps-test', pillWidth: 165 },
 ]
 
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
