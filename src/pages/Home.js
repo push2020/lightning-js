@@ -30,8 +30,8 @@ export default Blits.Component('Home', {
      * @returns {void}
      */
     ready() {
-      this._meter = startFpsMeter((sample) => {
-        this.fps = sample.fps
+      this._meter = startFpsMeter((fps) => {
+        this.fps = fps
       })
     },
     /**
