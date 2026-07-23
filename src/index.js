@@ -1,13 +1,12 @@
 import Blits from '@lightningjs/blits'
 import App from './App.js'
-import { COLORS } from './constants/theme.js'
 import { getLaunchSettings } from './helpers/deviceTier.js'
 
 Blits.Launch(App, 'app', {
   w: 1920,
   h: 1080,
   debugLevel: 1,
-  canvasColor: COLORS.background,
+  canvasColor: '#0B0B0B',
   enableMouse: true,
   // renderQuality, maxFPS, viewportMargin and gpuMemory come from the
   // low-end tier config (see helpers/deviceTier.js), used for all devices.
