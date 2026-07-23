@@ -1,5 +1,4 @@
 import Blits from '@lightningjs/blits'
-import { startFpsMeter } from '../helpers/fpsMeter.js'
 
 // Note: template values are hardcoded literals - Blits extracts `template` via
 // static source parsing, so it cannot contain JS template-literal interpolation.
@@ -7,7 +6,7 @@ import { startFpsMeter } from '../helpers/fpsMeter.js'
 
 /**
  * Single page app: shows the TV's live rendering FPS, large and centered,
- * sampled independently via helpers/fpsMeter.js.
+ * measured via a requestAnimationFrame loop sampled once per second.
  */
 export default Blits.Component('Home', {
   template: `
@@ -18,7 +17,7 @@ export default Blits.Component('Home', {
   state() {
     return {
       /**
-       * Frames rendered per second, sampled over a rolling window
+       * Frames rendered per second, sampled over a rolling 1s window
        * @type {number}
        */
       fps: 0,
@@ -26,20 +25,34 @@ export default Blits.Component('Home', {
   },
   hooks: {
     /**
-     * Starts the shared FPS sampling loop
+     * Starts a requestAnimationFrame loop that counts frames and updates
+     * fps once per second.
      * @returns {void}
      */
     ready() {
-      this._meter = startFpsMeter((fps) => {
-        this.fps = fps
-      })
+      let frames = 0
+      let lastTime = performance.now()
+
+      const loop = (now) => {
+        frames++
+
+        if (now - lastTime >= 1000) {
+          this.fps = Math.round((frames * 1000) / (now - lastTime))
+          frames = 0
+          lastTime = now
+        }
+
+        this._rafId = requestAnimationFrame(loop)
+      }
+
+      this._rafId = requestAnimationFrame(loop)
     },
     /**
      * Stops the FPS sampling loop
      * @returns {void}
      */
     destroy() {
-      this._meter.stop()
+      cancelAnimationFrame(this._rafId)
     },
   },
 })
