@@ -70,6 +70,7 @@ function buildHomeData() {
       id: 'home-trending',
       title: 'Trending Now',
       genres: ['Action', 'Drama', 'Thriller'],
+      variant: 'landscape',
     }),
     createRail({
       id: 'home-popular',
@@ -81,6 +82,7 @@ function buildHomeData() {
       title: 'Continue Watching',
       genres: ['Drama', 'Action', 'Sci-Fi'],
       withProgress: true,
+      variant: 'landscape',
     }),
     createRail({ id: 'home-action', title: 'Action', genres: ['Action', 'Adventure'] }),
     createRail({ id: 'home-comedy', title: 'Comedy', genres: ['Comedy', 'Family'] }),

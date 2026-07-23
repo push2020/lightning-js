@@ -1,5 +1,5 @@
 import Blits from '@lightningjs/blits'
-import { STAGE_W, CARD_W, CARD_GAP, CARD_PEEK_WIDTH } from '../constants/layout.js'
+import { CARD_W, CARD_H, CARD_GAP, CARD_PEEK_WIDTH, STAGE_W } from '../constants/layout.js'
 import { getRailScrollOffset } from '../helpers/scroll.js'
 import { playFocusSound, playSelectSound } from '../helpers/focusSound.js'
 import { getTierConfig } from '../helpers/deviceTier.js'
@@ -7,22 +7,31 @@ import { SCROLL_TRANSITION_DURATION, SCROLL_TRANSITION_EASING } from '../constan
 import PosterCard from './PosterCard.js'
 import FocusBorder from './FocusBorder.js'
 
-// How many cards fit in the rail's full-bleed visible viewport at once, used
-// to size the virtualization window (see state.winStart/winEnd below).
-const VISIBLE_CARDS = Math.ceil(STAGE_W / (CARD_W + CARD_GAP)) + 1
+// How many extra cards are mounted on each side of the visible window (see
+// state.winStart/winEnd below), sized per device tier. How many cards are
+// *visible* on screen at once isn't a fixed tier number though - it depends
+// on how wide this particular rail's cards are (portrait vs landscape), so
+// that part is computed per-instance from the card width - see
+// visibleCards()/updateScroll() below.
 const { cardBuffer: CARD_BUFFER } = getTierConfig().window
+
+// Track box height (see the h="438" Element below): fixed regardless of card
+// variant, so every rail occupies the same overall height (RAIL_HEIGHT) on
+// the page - a shorter landscape card is simply centered vertically within
+// it instead of shrinking the rail itself.
+const TRACK_H = 438
 
 // Note: template values are hardcoded literals - see FocusBorder.js for why.
 // 466 = RAIL_TITLE_HEIGHT (76) + CARD_H (390). 1920 = STAGE_W: the card track
 // is full-bleed edge-to-edge across the whole screen, same as HeroSlide's
 // background image, while the rail title keeps its own x="64" inset to line
 // up with the hero's title/Navbar (see CONTENT_PADDING_X).
-// 288 = CARD_W (260) + CARD_GAP (28). Keep these in sync with constants/layout.js.
-// The card track sits in a slightly taller box than the cards themselves
-// (24px vertical buffer) so the focus border never gets clipped by the
-// track's top/bottom boundary.
-// The row starts at y="52" (52 + 24 buffer = 76), leaving extra padding
-// between the rail title and the first row of cards.
+// The card track sits in a taller box (TRACK_H = 438) than any single card
+// variant, and cardY (see computed below) centers the card vertically inside
+// it, so the focus border never gets clipped by the track's top/bottom
+// boundary regardless of whether this rail uses portrait or landscape cards.
+// The row starts at y="52" (52 + 24 default portrait buffer = 76), leaving
+// extra padding between the rail title and the first row of cards.
 // The focus border is rendered once, fixed at x="64" (= CARD_PEEK_WIDTH,
 // lining up with the rail title's own x="64") rather than on whichever card
 // is selected - getRailScrollOffset() always slides the selected card into
@@ -53,23 +62,33 @@ export default Blits.Component('ContentRail', {
             :for="(item, index) in $items"
             :range="{from: $winStart, to: $winEnd}"
             key="$item.id"
-            y="24"
-            :x="$index * 288"
+            :y="$cardY"
+            :x="$index * $cardStep"
             :title="$item.title"
             :genre="$item.genre"
             :image="$item.image"
             :progress="$item.progress"
-            w="260"
-            h="390"
+            :w="$cardW"
+            :h="$cardH"
           />
         </Element>
-        <FocusBorder :active="$$hasFocus" x="64" y="24" w="260" h="390" zIndex="10" />
+        <FocusBorder :active="$$hasFocus" x="64" :y="$cardY" :w="$cardW" :h="$cardH" zIndex="10" />
       </Element>
     </Element>
   `,
   props: {
     title: '',
     items: [],
+    /**
+     * Width of each card, in pixels - portrait (CARD_W) by default, or wider
+     * for a landscape rail
+     */
+    cardW: CARD_W,
+    /**
+     * Height of each card, in pixels - portrait (CARD_H) by default, or
+     * shorter for a landscape rail
+     */
+    cardH: CARD_H,
   },
   state() {
     return {
@@ -82,20 +101,46 @@ export default Blits.Component('ContentRail', {
        * Current horizontal scroll offset of the card track, in pixels
        * @type {number}
        */
-      scrollOffset: getRailScrollOffset(0, CARD_W, CARD_GAP, CARD_PEEK_WIDTH),
+      scrollOffset: getRailScrollOffset(0, this.cardW, CARD_GAP, CARD_PEEK_WIDTH),
       /**
        * Index of the first card mounted by the :range virtualization window
        * @type {number}
        */
       winStart: 0,
       /**
-       * Index one past the last card mounted by the :range virtualization window
+       * Index one past the last card mounted by the :range virtualization window.
+       * Computed inline here (rather than via the visibleCards() computed
+       * below) because computed properties aren't set up yet when state() runs.
        * @type {number}
        */
-      winEnd: VISIBLE_CARDS + CARD_BUFFER,
+      winEnd: Math.ceil(STAGE_W / (this.cardW + CARD_GAP)) + CARD_BUFFER,
     }
   },
   computed: {
+    /**
+     * Horizontal distance between the start of one card and the next
+     * @returns {number}
+     */
+    cardStep() {
+      return this.cardW + CARD_GAP
+    },
+    /**
+     * Vertical offset that centers this rail's cards within the fixed-height
+     * track box, so portrait and landscape rails occupy the same overall
+     * rail height on the page
+     * @returns {number}
+     */
+    cardY() {
+      return Math.round((TRACK_H - this.cardH) / 2)
+    },
+    /**
+     * How many cards fit across the screen at once for this rail's card
+     * width, used to size the virtualization window
+     * @returns {number}
+     */
+    visibleCards() {
+      return Math.ceil(STAGE_W / this.cardStep)
+    },
     /**
      * Transition config that smoothly slides the card track to reveal the
      * selected card, instead of jumping straight to the target offset
@@ -146,9 +191,9 @@ export default Blits.Component('ContentRail', {
      * @returns {void}
      */
     updateScroll() {
-      this.scrollOffset = getRailScrollOffset(this.selectedIndex, CARD_W, CARD_GAP, CARD_PEEK_WIDTH)
+      this.scrollOffset = getRailScrollOffset(this.selectedIndex, this.cardW, CARD_GAP, CARD_PEEK_WIDTH)
       this.winStart = Math.max(0, this.selectedIndex - CARD_BUFFER)
-      this.winEnd = this.selectedIndex + VISIBLE_CARDS + CARD_BUFFER
+      this.winEnd = this.selectedIndex + this.visibleCards + CARD_BUFFER
     },
   },
 })

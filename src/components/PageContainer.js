@@ -37,6 +37,8 @@ export default Blits.Component('PageContainer', {
         :y="880 + $index * 506"
         :title="$rail.title"
         :items="$rail.items"
+        :cardW="$rail.cardW"
+        :cardH="$rail.cardH"
       />
     </Element>
   `,

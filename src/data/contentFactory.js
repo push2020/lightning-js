@@ -1,5 +1,6 @@
 import { buildPosterImages, buildHeroImages } from './images.js'
 import { getTierConfig } from '../helpers/deviceTier.js'
+import { CARD_W, CARD_H, LANDSCAPE_CARD_W, LANDSCAPE_CARD_H } from '../constants/layout.js'
 
 const ADJECTIVES = [
   'Silent',
@@ -79,11 +80,15 @@ function generateTitle(seed) {
  * @param {string[]} config.genres - pool of genre labels applied round-robin to cards
  * @param {number} [config.count] - number of cards to generate (defaults to 26)
  * @param {boolean} [config.withProgress] - whether cards show a continue-watching progress bar
- * @returns {{id: string, title: string, items: object[]}} the generated rail
+ * @param {'portrait'|'landscape'} [config.variant] - card shape for this rail (defaults to 'portrait')
+ * @returns {{id: string, title: string, items: object[], cardW: number, cardH: number}} the generated rail
  */
-export function createRail({ id, title, genres, count = 26, withProgress = false }) {
-  const { posterW, posterH } = getTierConfig().images
-  const images = buildPosterImages(id, count, posterW, posterH)
+export function createRail({ id, title, genres, count = 26, withProgress = false, variant = 'portrait' }) {
+  const isLandscape = variant === 'landscape'
+  const { posterW, posterH, landscapeW, landscapeH } = getTierConfig().images
+  const imageW = isLandscape ? landscapeW : posterW
+  const imageH = isLandscape ? landscapeH : posterH
+  const images = buildPosterImages(id, count, imageW, imageH)
   const seedBase = hashString(id)
   const items = []
   for (let i = 0; i < count; i++) {
@@ -95,7 +100,13 @@ export function createRail({ id, title, genres, count = 26, withProgress = false
       progress: withProgress ? 0.15 + ((i * 13) % 70) / 100 : undefined,
     })
   }
-  return { id, title, items }
+  return {
+    id,
+    title,
+    items,
+    cardW: isLandscape ? LANDSCAPE_CARD_W : CARD_W,
+    cardH: isLandscape ? LANDSCAPE_CARD_H : CARD_H,
+  }
 }
 
 /**

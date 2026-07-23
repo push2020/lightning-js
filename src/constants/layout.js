@@ -13,6 +13,18 @@ export const CARD_W = 260
 export const CARD_H = 390
 export const CARD_GAP = 28
 
+// Height of the title/genre text strip below a card's image (both portrait
+// and landscape cards share this strip height - only the image area above it
+// changes size). 390 - 300 = 90 for the portrait default.
+export const CARD_TEXT_STRIP_HEIGHT = 90
+
+// Landscape (16:9 thumbnail) card variant, used for rows like "Continue
+// Watching" instead of the tall portrait poster. Same text strip height as
+// the portrait card, so only the image area is wider/shorter.
+export const LANDSCAPE_CARD_W = 460
+export const LANDSCAPE_IMAGE_H = 259
+export const LANDSCAPE_CARD_H = LANDSCAPE_IMAGE_H + CARD_TEXT_STRIP_HEIGHT
+
 // Peek carousel: how far the focused card's slot sits from the rail's left
 // edge (matching CONTENT_PADDING_X, so it lines up with the rail title and
 // the rest of the app's content margin, and the first card always rests at

@@ -48,7 +48,7 @@ Each page (`Home.js`, `Movies.js`, `Shows.js`, `Sports.js`) is intentionally tin
 
 ### data/
 
-- `contentFactory.js` — the two functions that build fake content: `createRail(...)` (generates N poster cards with made-up titles like "Crimson Wolves") and `createHeroSlides(...)` (attaches a background image to each hero slide). Both read the tier's `images` config (`getTierConfig().images`) to request appropriately-sized poster/hero images.
+- `contentFactory.js` — the two functions that build fake content: `createRail(...)` (generates N poster cards with made-up titles like "Crimson Wolves") and `createHeroSlides(...)` (attaches a background image to each hero slide). Both read the tier's `images` config (`getTierConfig().images`) to request appropriately-sized poster/hero images. `createRail` takes a `variant: 'portrait' | 'landscape'` option (defaults to `'portrait'`) that picks the right image size and card dimensions (`cardW`/`cardH` on the returned rail, passed through `PageContainer` to `ContentRail`) — see "How landscape rails work" below.
 - `images.js` — turns a rail/page id + width/height into a Lorem Picsum URL, cycling through categories (mountains, ocean, animals, etc.) so images don't repeat. It's tier-agnostic — the caller (`contentFactory.js`) decides what size to ask for.
 - `home.js` / `movies.js` / `shows.js` / `sports.js` — each just calls `createRail`/`createHeroSlides` to declare that page's hero slides and list of rails. **This is the file to edit if you want to add/rename/remove rails or change hero copy.**
 
@@ -86,6 +86,10 @@ To avoid keeping the entire page's worth of hero slides / rails / cards mounted 
 The buffer/window sizes above (`heroNeighbors`, `cardBuffer`, `railBufferUp`, `railBufferDown`, `railVisibleRows`) — plus poster/hero image resolution and Lightning's launch-time render settings (`renderQuality`, `maxFPS`, `viewportMargin`, `gpuMemory`) — all come from **`helpers/deviceTier.js`**, which exposes a single low-end tier config used for every device (it runs acceptably on constrained and high-end hardware alike, so there's no need to detect device capability).
 
 `getLaunchSettings()` feeds `Blits.Launch()` in `index.js`; `getTierConfig()` feeds the per-component window sizes and `contentFactory.js`'s image dimensions.
+
+### How landscape rails work
+
+`ContentRail` isn't hardcoded to the portrait poster shape — it takes `cardW`/`cardH` props (defaulting to the portrait `CARD_W`/`CARD_H`) and derives everything else from them: `cardStep` (horizontal spacing), `cardY` (vertical position, centered within the rail's fixed-height track box so every rail — portrait or landscape — occupies the same overall `RAIL_HEIGHT` on the page), and `visibleCards` (how many cards fit across the 1920px screen at this card's width, used to size the virtualization window instead of a fixed tier number). `PosterCard` mirrors this — its image area height is `$h - CARD_TEXT_STRIP_HEIGHT`, so the same component renders both shapes. To make a rail landscape, pass `variant: 'landscape'` to `createRail(...)` in a page's data file (e.g. `home.js`); it swaps in `LANDSCAPE_CARD_W`/`LANDSCAPE_CARD_H` (`constants/layout.js`) and requests correctly-sized source images via the tier's `landscapeW`/`landscapeH`.
 
 ## How remote-control focus & navigation works
 
