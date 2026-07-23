@@ -1,10 +1,19 @@
 import Blits from '@lightningjs/blits'
-import { HERO_HEIGHT, RAIL_HEIGHT, NAVBAR_HEIGHT } from '../constants/layout.js'
+import {
+  CARD_W,
+  CARD_H,
+  CARD_PEEK_WIDTH,
+  HERO_HEIGHT,
+  RAIL_HEIGHT,
+  NAVBAR_HEIGHT,
+  getRailFocusBorderScreenY,
+} from '../constants/layout.js'
 import { getPageScrollOffset } from '../helpers/scroll.js'
 import { getTierConfig } from '../helpers/deviceTier.js'
 import { SCROLL_TRANSITION_DURATION, SCROLL_TRANSITION_EASING } from '../constants/animation.js'
 import HeroCarousel from './HeroCarousel.js'
 import ContentRail from './ContentRail.js'
+import FocusBorder from './FocusBorder.js'
 
 const { railBufferUp: RAIL_BUFFER_UP, railBufferDown: RAIL_BUFFER_DOWN, railVisibleRows: RAIL_VISIBLE_ROWS } =
   getTierConfig().window
@@ -14,6 +23,9 @@ const { railBufferUp: RAIL_BUFFER_UP, railBufferDown: RAIL_BUFFER_DOWN, railVisi
 // x="0" (not CONTENT_PADDING_X) because its card track is full-bleed,
 // edge-to-edge like HeroCarousel - ContentRail applies its own x="64" inset
 // internally, just to its title text, to line up with the hero's title.
+// The rail FocusBorder lives on this component at a fixed screen position
+// (Prime-style): vertical page scroll slides the stack behind it; horizontal
+// card scroll slides each rail's track underneath the same frame.
 
 /**
  * Generic OTT page layout: a hero carousel followed by any number of content
@@ -25,20 +37,31 @@ export default Blits.Component('PageContainer', {
   components: {
     HeroCarousel,
     ContentRail,
+    FocusBorder,
   },
   template: `
-    <Element :y.transition="$scrollTransition">
-      <HeroCarousel ref="hero" :slides="$hero" />
-      <ContentRail
-        :for="(rail, index) in $rails"
-        :range="{from: $railWinStart, to: $railWinEnd}"
-        key="$rail.id"
-        :ref="'rail' + $index"
-        :y="880 + $index * 506"
-        :title="$rail.title"
-        :items="$rail.items"
-        :cardW="$rail.cardW"
-        :cardH="$rail.cardH"
+    <Element w="1920" h="1080" clipping="true">
+      <Element :y.transition="$scrollTransition">
+        <HeroCarousel ref="hero" :slides="$hero" />
+        <ContentRail
+          :for="(rail, index) in $rails"
+          :range="{from: $railWinStart, to: $railWinEnd}"
+          key="$rail.id"
+          :ref="'rail' + $index"
+          :y="880 + $index * 506"
+          :title="$rail.title"
+          :items="$rail.items"
+          :cardW="$rail.cardW"
+          :cardH="$rail.cardH"
+        />
+      </Element>
+      <FocusBorder
+        :active="$showRailFocusBorder"
+        x="64"
+        :y="$railFocusBorderY"
+        :w="$railFocusBorderW"
+        :h="$railFocusBorderH"
+        zIndex="20"
       />
     </Element>
   `,
@@ -54,6 +77,11 @@ export default Blits.Component('PageContainer', {
        */
       sectionIndex: 0,
       /**
+       * Whether keyboard focus is inside this page (hero or a rail), not the Navbar
+       * @type {boolean}
+       */
+      contentHasFocus: false,
+      /**
        * Index of the first rail mounted by the :range virtualization window
        * @type {number}
        */
@@ -63,21 +91,20 @@ export default Blits.Component('PageContainer', {
        * @type {number}
        */
       railWinEnd: RAIL_VISIBLE_ROWS + RAIL_BUFFER_DOWN,
+      /**
+       * Inclusive bounds of the rail index range covered by the current scroll
+       * animation; widens the :range window so rails along the path stay mounted.
+       * @type {number}
+       */
+      railSpanLo: 0,
+      /** @type {number} */
+      railSpanHi: 0,
     }
   },
   computed: {
-    /**
-     * Vertical pixel offset needed to bring the focused section into view
-     * @returns {number}
-     */
     scrollOffset() {
       return getPageScrollOffset(this.sectionIndex, HERO_HEIGHT, RAIL_HEIGHT, NAVBAR_HEIGHT)
     },
-    /**
-     * Transition config that smoothly slides the page content stack to the
-     * focused section, instead of jumping straight to the target offset
-     * @returns {{value: number, duration: number, easing: string}}
-     */
     scrollTransition() {
       return {
         value: -this.scrollOffset,
@@ -85,33 +112,45 @@ export default Blits.Component('PageContainer', {
         easing: SCROLL_TRANSITION_EASING,
       }
     },
+    focusedRail() {
+      if (this.sectionIndex <= 0) return null
+      return this.rails[this.sectionIndex - 1] ?? null
+    },
+    railFocusBorderW() {
+      return this.focusedRail?.cardW ?? CARD_W
+    },
+    railFocusBorderH() {
+      return this.focusedRail?.cardH ?? CARD_H
+    },
+    railFocusBorderY() {
+      return getRailFocusBorderScreenY(this.railFocusBorderH, NAVBAR_HEIGHT)
+    },
+    showRailFocusBorder() {
+      return this.contentHasFocus && this.sectionIndex > 0
+    },
   },
   hooks: {
-    /**
-     * Registers the listener that lets the Navbar hand focus off into this page
-     * @returns {void}
-     */
     init() {
-      this.$listen('nav:focus-content', () => this.focusCurrentSection())
+      this.$listen('nav:focus-content', () => {
+        this.contentHasFocus = true
+        this.focusCurrentSection()
+      })
+    },
+    destroy() {
+      clearTimeout(this._railCompactTimer)
     },
   },
   input: {
-    /**
-     * Moves focus down to the next rail, or does nothing past the last rail
-     * @returns {void}
-     */
     down() {
       if (this.sectionIndex >= this.rails.length) return
+      this.contentHasFocus = true
       this.sectionIndex++
       this.updateRailWindow()
       this.focusCurrentSection()
     },
-    /**
-     * Moves focus up to the previous section, or hands focus back to the Navbar
-     * @returns {void}
-     */
     up() {
       if (this.sectionIndex <= 0) {
+        this.contentHasFocus = false
         this.$emit('nav:focus-navbar')
         return
       }
@@ -119,34 +158,67 @@ export default Blits.Component('PageContainer', {
       this.updateRailWindow()
       this.focusCurrentSection()
     },
-    /**
-     * Hands focus back to the Navbar as a quick escape action
-     * @returns {void}
-     */
     back() {
+      this.contentHasFocus = false
       this.$emit('nav:focus-navbar')
     },
   },
   methods: {
-    /**
-     * Focuses whichever section (hero or rail) matches the current sectionIndex
-     * @returns {void}
-     */
     focusCurrentSection() {
       const ref = this.sectionIndex === 0 ? 'hero' : `rail${this.sectionIndex - 1}`
       const target = this.$select(ref)
       if (target) target.$focus()
     },
-    /**
-     * Slides the rail mount window so only rails near the focused section are
-     * instantiated. Must run before focusCurrentSection() so the target rail
-     * is guaranteed mounted when $select() looks for it.
-     * @returns {void}
-     */
     updateRailWindow() {
       const railIndex = this.sectionIndex - 1
+
+      if (railIndex < 0) {
+        this.railWinStart = 0
+        this.railWinEnd = Math.min(this.rails.length, RAIL_VISIBLE_ROWS + RAIL_BUFFER_DOWN)
+        this.scheduleRailWindowCompact()
+        return
+      }
+
+      const prevRailIndex = this.sectionIndex - 2
+
+      if (!this._railCompactTimer) {
+        if (prevRailIndex >= 0) {
+          this.railSpanLo = Math.min(prevRailIndex, railIndex)
+          this.railSpanHi = Math.max(prevRailIndex, railIndex)
+        } else {
+          this.railSpanLo = railIndex
+          this.railSpanHi = railIndex
+        }
+      } else {
+        this.railSpanLo = Math.min(this.railSpanLo, railIndex)
+        this.railSpanHi = Math.max(this.railSpanHi, railIndex)
+      }
+
+      this.railWinStart = Math.max(0, this.railSpanLo - RAIL_BUFFER_UP)
+      this.railWinEnd = Math.min(
+        this.rails.length,
+        this.railSpanHi + RAIL_VISIBLE_ROWS + RAIL_BUFFER_DOWN,
+      )
+      this.scheduleRailWindowCompact()
+    },
+    compactRailWindow() {
+      const railIndex = this.sectionIndex - 1
+      if (railIndex < 0) {
+        this.railWinStart = 0
+        this.railWinEnd = Math.min(this.rails.length, RAIL_VISIBLE_ROWS + RAIL_BUFFER_DOWN)
+        return
+      }
+      this.railSpanLo = railIndex
+      this.railSpanHi = railIndex
       this.railWinStart = Math.max(0, railIndex - RAIL_BUFFER_UP)
-      this.railWinEnd = railIndex + RAIL_VISIBLE_ROWS + RAIL_BUFFER_DOWN
+      this.railWinEnd = Math.min(this.rails.length, railIndex + RAIL_VISIBLE_ROWS + RAIL_BUFFER_DOWN)
+    },
+    scheduleRailWindowCompact() {
+      clearTimeout(this._railCompactTimer)
+      this._railCompactTimer = setTimeout(() => {
+        this._railCompactTimer = null
+        this.compactRailWindow()
+      }, SCROLL_TRANSITION_DURATION)
     },
   },
 })

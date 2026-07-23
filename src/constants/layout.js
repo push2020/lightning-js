@@ -37,4 +37,37 @@ export const RAIL_TITLE_HEIGHT = 76
 export const RAIL_GAP = 40
 export const RAIL_HEIGHT = RAIL_TITLE_HEIGHT + CARD_H + RAIL_GAP
 
+/** Vertical gap between the navbar and a focused rail's title (see scroll.js). */
+export const NAVBAR_CONTENT_GAP = 24
+
+/** Offset from the rail block top to the card track (see ContentRail.js). */
+export const RAIL_TRACK_OFFSET_Y = 52
+
+/** Fixed height of the card track box inside a rail (see ContentRail.js). */
+export const RAIL_TRACK_H = 438
+
+/** FocusBorder draws outset from the card edge on every side (see FocusBorder.js). */
+export const FOCUS_BORDER_OUTSET = 8
+
+/**
+ * Vertical offset of a card within the rail's fixed-height track box.
+ * @param {number} cardH - card height in pixels
+ * @returns {number}
+ */
+export function getCardYInRailTrack(cardH) {
+  return Math.round((RAIL_TRACK_H - cardH) / 2)
+}
+
+/**
+ * Screen-space Y for the rail focus border when a rail is scrolled into the
+ * focus slot below the navbar (Prime-style fixed frame).
+ * @param {number} cardH - card height in pixels
+ * @param {number} [navbarHeight=NAVBAR_HEIGHT]
+ * @returns {number}
+ */
+export function getRailFocusBorderScreenY(cardH, navbarHeight = NAVBAR_HEIGHT) {
+  const railTop = navbarHeight + NAVBAR_CONTENT_GAP
+  return railTop + RAIL_TRACK_OFFSET_Y + getCardYInRailTrack(cardH) - FOCUS_BORDER_OUTSET
+}
+
 export const HERO_HEIGHT = 880

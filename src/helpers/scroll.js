@@ -1,3 +1,5 @@
+import { NAVBAR_CONTENT_GAP } from '../constants/layout.js'
+
 /**
  * Calculates the horizontal scroll offset needed to bring the focused card to
  * its slot in the rail window, peek pixels in from the left edge - the same
@@ -18,10 +20,6 @@ export function getRailScrollOffset(index, cardWidth, gap, peek) {
   return index * (cardWidth + gap) - peek
 }
 
-// Extra breathing room kept between the fixed navbar overlay and a scrolled-to
-// rail's title, so the title never sits flush against (or under) the navbar.
-const NAVBAR_GAP = 24
-
 /**
  * Calculates the vertical scroll offset for the page content stack, based on
  * which section (the hero, or a specific rail) currently has focus. Rails are
@@ -35,5 +33,5 @@ const NAVBAR_GAP = 24
  */
 export function getPageScrollOffset(sectionIndex, heroHeight, railHeight, navbarHeight) {
   if (sectionIndex === 0) return 0
-  return heroHeight + (sectionIndex - 1) * railHeight - navbarHeight - NAVBAR_GAP
+  return heroHeight + (sectionIndex - 1) * railHeight - navbarHeight - NAVBAR_CONTENT_GAP
 }
