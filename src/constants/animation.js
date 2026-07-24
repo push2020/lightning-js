@@ -28,7 +28,7 @@ export const SCROLL_TRANSITION_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
 export const VERTICAL_SCROLL = {
   throttleMs: 350,
   fastWindowMs: 500,
-  fastDuration: 500,
+  fastDuration: 450,
   fastEasing: 'linear',
   settleDuration: SCROLL_TRANSITION_DURATION,
   settleEasing: SCROLL_TRANSITION_EASING,
@@ -37,7 +37,7 @@ export const VERTICAL_SCROLL = {
 export const HORIZONTAL_SCROLL = {
   throttleMs: 220,
   fastWindowMs: 500,
-  fastDuration: 500,
+  fastDuration: 300,
   fastEasing: 'linear',
   settleDuration: SCROLL_TRANSITION_DURATION,
   settleEasing: SCROLL_TRANSITION_EASING,
