@@ -26,7 +26,7 @@ export const TIER = {
 const HIGH_TIER = {
   launch: {
     renderQuality: 'high', // full shader/texture fidelity
-    maxFPS: 60, // smooth scrolling/animation on capable hardware
+    maxFPS: 30, // smooth scrolling/animation on capable hardware
     viewportMargin: 300, // preload further ahead since memory headroom is larger
     // Renderer texture memory budget: allow up to 350MB, start evicting at 85%,
     // sweep every 5s, and allow brief overshoot before enforcing the cap
