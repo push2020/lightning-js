@@ -13,10 +13,7 @@ import { getTierConfig } from '../helpers/deviceTier.js'
 import {
   SCROLL_TRANSITION_DURATION,
   SCROLL_TRANSITION_EASING,
-  NAV_THROTTLE_MS,
-  FAST_SCROLL_WINDOW_MS,
-  FAST_SCROLL_DURATION,
-  FAST_SCROLL_EASING,
+  VERTICAL_SCROLL,
 } from '../constants/animation.js'
 import HeroCarousel from './HeroCarousel.js'
 import ContentRail from './ContentRail.js'
@@ -193,12 +190,13 @@ export default Blits.Component('PageContainer', {
      * @returns {boolean} true if the caller should proceed with the step
      */
     gateScrollStep() {
+      const cfg = VERTICAL_SCROLL
       const now = performance.now()
       const dt = now - (this._lastNavAt ?? -Infinity)
-      if (dt < NAV_THROTTLE_MS) return false
-      const fast = dt < FAST_SCROLL_WINDOW_MS
-      this.scrollDuration = fast ? FAST_SCROLL_DURATION : SCROLL_TRANSITION_DURATION
-      this.scrollEasing = fast ? FAST_SCROLL_EASING : SCROLL_TRANSITION_EASING
+      if (dt < cfg.throttleMs) return false
+      const fast = dt < cfg.fastWindowMs
+      this.scrollDuration = fast ? cfg.fastDuration : cfg.settleDuration
+      this.scrollEasing = fast ? cfg.fastEasing : cfg.settleEasing
       this._lastNavAt = now
       return true
     },

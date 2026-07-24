@@ -6,10 +6,7 @@ import { getTierConfig } from '../helpers/deviceTier.js'
 import {
   SCROLL_TRANSITION_DURATION,
   SCROLL_TRANSITION_EASING,
-  NAV_THROTTLE_MS,
-  FAST_SCROLL_WINDOW_MS,
-  FAST_SCROLL_DURATION,
-  FAST_SCROLL_EASING,
+  HORIZONTAL_SCROLL,
 } from '../constants/animation.js'
 import PosterCard from './PosterCard.js'
 
@@ -138,12 +135,13 @@ export default Blits.Component('ContentRail', {
      * @returns {boolean} true if the caller should proceed with the step
      */
     gateScrollStep() {
+      const cfg = HORIZONTAL_SCROLL
       const now = performance.now()
       const dt = now - (this._lastNavAt ?? -Infinity)
-      if (dt < NAV_THROTTLE_MS) return false
-      const fast = dt < FAST_SCROLL_WINDOW_MS
-      this.trackDuration = fast ? FAST_SCROLL_DURATION : SCROLL_TRANSITION_DURATION
-      this.trackEasing = fast ? FAST_SCROLL_EASING : SCROLL_TRANSITION_EASING
+      if (dt < cfg.throttleMs) return false
+      const fast = dt < cfg.fastWindowMs
+      this.trackDuration = fast ? cfg.fastDuration : cfg.settleDuration
+      this.trackEasing = fast ? cfg.fastEasing : cfg.settleEasing
       this._lastNavAt = now
       return true
     },

@@ -8,25 +8,37 @@ export const SCROLL_TRANSITION_DURATION = 1000
 export const SCROLL_TRANSITION_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
 /**
- * Minimum time between two processed navigation steps. Held-key auto-repeat
- * fires far faster than this; repeats arriving sooner are dropped so the row
- * doesn't fly past dozens of items at once ("moving too fast" fix). Tuned for
- * a comfortable ~5-6 steps/sec while a direction key is held down.
+ * Held-scroll tuning, kept separate per axis so vertical (page section) and
+ * horizontal (card rail) navigation can be slowed/smoothed independently.
+ *
+ * Fields:
+ * - throttleMs: minimum time between two processed steps. Held-key auto-repeat
+ *   fires far faster; repeats arriving sooner are dropped so the view doesn't
+ *   fly past items ("too fast" fix). Higher = slower cadence.
+ * - fastWindowMs: if the gap since the previous step is under this, the user is
+ *   holding the key (fast scroll) rather than tapping. Keep ABOVE throttleMs so
+ *   throttled held-repeats still register as "fast".
+ * - fastDuration/fastEasing: the glide used while scrolling fast, so steps chain
+ *   into one continuous motion instead of restarting the long settle every
+ *   repeat ("laggy" fix). Keep fastDuration ≈ throttleMs. A single press still
+ *   uses settleDuration/settleEasing.
+ * - settleDuration/settleEasing: the smooth transition for a single, deliberate
+ *   press (and the resting step after a held scroll).
  */
-export const NAV_THROTTLE_MS = 350
+export const VERTICAL_SCROLL = {
+  throttleMs: 350,
+  fastWindowMs: 500,
+  fastDuration: 500,
+  fastEasing: 'linear',
+  settleDuration: SCROLL_TRANSITION_DURATION,
+  settleEasing: SCROLL_TRANSITION_EASING,
+}
 
-/**
- * If the gap since the previous processed step is under this window, the user
- * is holding the key (fast scroll) rather than tapping. Should sit comfortably
- * above NAV_THROTTLE_MS so throttled held-repeats still register as "fast".
- */
-export const FAST_SCROLL_WINDOW_MS = 500
-
-/**
- * Shorter, near-linear transition used while scrolling fast (held key). Each
- * step settles roughly as the next begins, so consecutive steps chain into one
- * continuous glide that keeps pace instead of restarting a long 1000ms ease-out
- * every repeat ("laggy" fix). A single press still uses the full smooth settle.
- */
-export const FAST_SCROLL_DURATION = 500
-export const FAST_SCROLL_EASING = 'linear'
+export const HORIZONTAL_SCROLL = {
+  throttleMs: 220,
+  fastWindowMs: 500,
+  fastDuration: 500,
+  fastEasing: 'linear',
+  settleDuration: SCROLL_TRANSITION_DURATION,
+  settleEasing: SCROLL_TRANSITION_EASING,
+}
