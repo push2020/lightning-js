@@ -3,7 +3,14 @@ import { CARD_W, CARD_H, CARD_GAP, CARD_PEEK_WIDTH, STAGE_W, getCardYInRailTrack
 import { getRailScrollOffset } from '../helpers/scroll.js'
 import { playFocusSound, playSelectSound } from '../helpers/focusSound.js'
 import { getTierConfig } from '../helpers/deviceTier.js'
-import { SCROLL_TRANSITION_DURATION, SCROLL_TRANSITION_EASING } from '../constants/animation.js'
+import {
+  SCROLL_TRANSITION_DURATION,
+  SCROLL_TRANSITION_EASING,
+  NAV_THROTTLE_MS,
+  FAST_SCROLL_WINDOW_MS,
+  FAST_SCROLL_DURATION,
+  FAST_SCROLL_EASING,
+} from '../constants/animation.js'
 import PosterCard from './PosterCard.js'
 
 const { cardBuffer: CARD_BUFFER } = getTierConfig().window
@@ -64,6 +71,18 @@ export default Blits.Component('ContentRail', {
       winEnd: Math.ceil(STAGE_W / (this.cardW + CARD_GAP)) + CARD_BUFFER,
       cardSpanLo: 0,
       cardSpanHi: 0,
+      /**
+       * Duration (ms) of the current card-track transition. Shortened while
+       * Left/Right is held so held-scroll stays smooth; restored to the full
+       * settle duration for a single, deliberate press.
+       * @type {number}
+       */
+      trackDuration: SCROLL_TRANSITION_DURATION,
+      /**
+       * Easing of the current card-track transition; near-linear while holding.
+       * @type {string}
+       */
+      trackEasing: SCROLL_TRANSITION_EASING,
     }
   },
   computed: {
@@ -79,8 +98,8 @@ export default Blits.Component('ContentRail', {
     trackTransition() {
       return {
         value: -this.scrollOffset,
-        duration: SCROLL_TRANSITION_DURATION,
-        easing: SCROLL_TRANSITION_EASING,
+        duration: this.trackDuration,
+        easing: this.trackEasing,
       }
     },
   },
@@ -92,6 +111,7 @@ export default Blits.Component('ContentRail', {
   input: {
     left() {
       if (this.selectedIndex <= 0) return
+      if (!this.gateScrollStep()) return
       const prevIndex = this.selectedIndex
       this.selectedIndex--
       this.updateScroll(prevIndex)
@@ -99,6 +119,7 @@ export default Blits.Component('ContentRail', {
     },
     right() {
       if (this.selectedIndex >= this.items.length - 1) return
+      if (!this.gateScrollStep()) return
       const prevIndex = this.selectedIndex
       this.selectedIndex++
       this.updateScroll(prevIndex)
@@ -109,6 +130,23 @@ export default Blits.Component('ContentRail', {
     },
   },
   methods: {
+    /**
+     * Rate-limits held-key auto-repeat and picks the card-track transition
+     * speed. Drops repeats arriving faster than NAV_THROTTLE_MS so held scroll
+     * doesn't fly past cards; when a step is accepted, uses the short near-linear
+     * transition for held scroll and the full smooth settle for a single press.
+     * @returns {boolean} true if the caller should proceed with the step
+     */
+    gateScrollStep() {
+      const now = performance.now()
+      const dt = now - (this._lastNavAt ?? -Infinity)
+      if (dt < NAV_THROTTLE_MS) return false
+      const fast = dt < FAST_SCROLL_WINDOW_MS
+      this.trackDuration = fast ? FAST_SCROLL_DURATION : SCROLL_TRANSITION_DURATION
+      this.trackEasing = fast ? FAST_SCROLL_EASING : SCROLL_TRANSITION_EASING
+      this._lastNavAt = now
+      return true
+    },
     updateScroll(prevIndex) {
       this.scrollOffset = getRailScrollOffset(this.selectedIndex, this.cardW, CARD_GAP, CARD_PEEK_WIDTH)
 

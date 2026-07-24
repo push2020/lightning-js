@@ -10,7 +10,14 @@ import {
 } from '../constants/layout.js'
 import { getPageScrollOffset } from '../helpers/scroll.js'
 import { getTierConfig } from '../helpers/deviceTier.js'
-import { SCROLL_TRANSITION_DURATION, SCROLL_TRANSITION_EASING } from '../constants/animation.js'
+import {
+  SCROLL_TRANSITION_DURATION,
+  SCROLL_TRANSITION_EASING,
+  NAV_THROTTLE_MS,
+  FAST_SCROLL_WINDOW_MS,
+  FAST_SCROLL_DURATION,
+  FAST_SCROLL_EASING,
+} from '../constants/animation.js'
 import HeroCarousel from './HeroCarousel.js'
 import ContentRail from './ContentRail.js'
 import FocusBorder from './FocusBorder.js'
@@ -99,6 +106,18 @@ export default Blits.Component('PageContainer', {
       railSpanLo: 0,
       /** @type {number} */
       railSpanHi: 0,
+      /**
+       * Duration (ms) of the current page scroll transition. Shortened while a
+       * direction key is held so held-scroll stays smooth; restored to the full
+       * settle duration for a single, deliberate press.
+       * @type {number}
+       */
+      scrollDuration: SCROLL_TRANSITION_DURATION,
+      /**
+       * Easing of the current page scroll transition; near-linear while holding.
+       * @type {string}
+       */
+      scrollEasing: SCROLL_TRANSITION_EASING,
     }
   },
   computed: {
@@ -108,8 +127,8 @@ export default Blits.Component('PageContainer', {
     scrollTransition() {
       return {
         value: -this.scrollOffset,
-        duration: SCROLL_TRANSITION_DURATION,
-        easing: SCROLL_TRANSITION_EASING,
+        duration: this.scrollDuration,
+        easing: this.scrollEasing,
       }
     },
     focusedRail() {
@@ -143,6 +162,7 @@ export default Blits.Component('PageContainer', {
   input: {
     down() {
       if (this.sectionIndex >= this.rails.length) return
+      if (!this.gateScrollStep()) return
       this.contentHasFocus = true
       this.sectionIndex++
       this.updateRailWindow()
@@ -154,6 +174,7 @@ export default Blits.Component('PageContainer', {
         this.$emit('nav:focus-navbar')
         return
       }
+      if (!this.gateScrollStep()) return
       this.sectionIndex--
       this.updateRailWindow()
       this.focusCurrentSection()
@@ -164,6 +185,23 @@ export default Blits.Component('PageContainer', {
     },
   },
   methods: {
+    /**
+     * Rate-limits held-key auto-repeat and picks the scroll transition speed.
+     * Drops repeats arriving faster than NAV_THROTTLE_MS so held scroll doesn't
+     * fly past sections; when a step is accepted, uses the short near-linear
+     * transition for held scroll and the full smooth settle for a single press.
+     * @returns {boolean} true if the caller should proceed with the step
+     */
+    gateScrollStep() {
+      const now = performance.now()
+      const dt = now - (this._lastNavAt ?? -Infinity)
+      if (dt < NAV_THROTTLE_MS) return false
+      const fast = dt < FAST_SCROLL_WINDOW_MS
+      this.scrollDuration = fast ? FAST_SCROLL_DURATION : SCROLL_TRANSITION_DURATION
+      this.scrollEasing = fast ? FAST_SCROLL_EASING : SCROLL_TRANSITION_EASING
+      this._lastNavAt = now
+      return true
+    },
     focusCurrentSection() {
       const ref = this.sectionIndex === 0 ? 'hero' : `rail${this.sectionIndex - 1}`
       const target = this.$select(ref)
