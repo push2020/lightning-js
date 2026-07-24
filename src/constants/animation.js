@@ -46,8 +46,8 @@ export const VERTICAL_SCROLL = {
 
 export const HORIZONTAL_SCROLL = {
   throttleMs: 100,
-  fastWindowMs: 120,
-  fastDuration: 150,
+  fastWindowMs: 150,
+  fastDuration: 200,
   fastEasing: 'linear',
   settleDuration: SCROLL_TRANSITION_DURATION,
   settleEasing: SCROLL_TRANSITION_EASING,
