@@ -10,6 +10,7 @@ import {
 } from '../constants/layout.js'
 import { getPageScrollOffset } from '../helpers/scroll.js'
 import { getTierConfig } from '../helpers/deviceTier.js'
+import { markFastScroll, scheduleSettle } from '../helpers/loadGate.js'
 import {
   SCROLL_TRANSITION_DURATION,
   SCROLL_TRANSITION_EASING,
@@ -197,6 +198,7 @@ export default Blits.Component('PageContainer', {
       const fast = dt < cfg.fastWindowMs
       this.scrollDuration = fast ? cfg.fastDuration : cfg.settleDuration
       this.scrollEasing = fast ? cfg.fastEasing : cfg.settleEasing
+      if (fast) markFastScroll()
       this._lastNavAt = now
       return true
     },
@@ -242,12 +244,14 @@ export default Blits.Component('PageContainer', {
       if (railIndex < 0) {
         this.railWinStart = 0
         this.railWinEnd = Math.min(this.rails.length, RAIL_VISIBLE_ROWS + RAIL_BUFFER_DOWN)
+        scheduleSettle()
         return
       }
       this.railSpanLo = railIndex
       this.railSpanHi = railIndex
       this.railWinStart = Math.max(0, railIndex - RAIL_BUFFER_UP)
       this.railWinEnd = Math.min(this.rails.length, railIndex + RAIL_VISIBLE_ROWS + RAIL_BUFFER_DOWN)
+      scheduleSettle()
     },
     scheduleRailWindowCompact() {
       clearTimeout(this._railCompactTimer)

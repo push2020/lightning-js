@@ -3,6 +3,7 @@ import { CARD_W, CARD_H, CARD_GAP, CARD_PEEK_WIDTH, STAGE_W, getCardYInRailTrack
 import { getRailScrollOffset } from '../helpers/scroll.js'
 import { playFocusSound, playSelectSound } from '../helpers/focusSound.js'
 import { getTierConfig } from '../helpers/deviceTier.js'
+import { markFastScroll, scheduleSettle } from '../helpers/loadGate.js'
 import {
   SCROLL_TRANSITION_DURATION,
   SCROLL_TRANSITION_EASING,
@@ -142,6 +143,7 @@ export default Blits.Component('ContentRail', {
       const fast = dt < cfg.fastWindowMs
       this.trackDuration = fast ? cfg.fastDuration : cfg.settleDuration
       this.trackEasing = fast ? cfg.fastEasing : cfg.settleEasing
+      if (fast) markFastScroll()
       this._lastNavAt = now
       return true
     },
@@ -165,6 +167,7 @@ export default Blits.Component('ContentRail', {
       this.cardSpanHi = this.selectedIndex
       this.winStart = Math.max(0, this.selectedIndex - CARD_BUFFER)
       this.winEnd = Math.min(this.items.length, this.selectedIndex + this.visibleCards + CARD_BUFFER)
+      scheduleSettle()
     },
     scheduleCardWindowCompact() {
       clearTimeout(this._cardCompactTimer)

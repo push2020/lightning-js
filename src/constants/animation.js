@@ -8,6 +8,16 @@ export const SCROLL_TRANSITION_DURATION = 1000
 export const SCROLL_TRANSITION_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
 /**
+ * Delay (ms) after a poster card mounts before it loads its image, so a single
+ * deliberate scroll step reads as a smooth settle rather than an instant pop-in.
+ * During a held/fast scroll the load is deferred further, until the scroll
+ * settles and the off-screen rows have been dropped (see helpers/loadGate.js),
+ * so only cards actually in the viewport load. Kept short enough that a normal
+ * press still feels responsive.
+ */
+export const IMAGE_LOAD_DELAY = 280
+
+/**
  * Held-scroll tuning, kept separate per axis so vertical (page section) and
  * horizontal (card rail) navigation can be slowed/smoothed independently.
  *
@@ -26,18 +36,18 @@ export const SCROLL_TRANSITION_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
  *   press (and the resting step after a held scroll).
  */
 export const VERTICAL_SCROLL = {
-  throttleMs: 420,
-  fastWindowMs: 500,
-  fastDuration: 500,
+  throttleMs: 200,
+  fastWindowMs: 220,
+  fastDuration: 280,
   fastEasing: 'linear',
   settleDuration: SCROLL_TRANSITION_DURATION,
   settleEasing: SCROLL_TRANSITION_EASING,
 }
 
 export const HORIZONTAL_SCROLL = {
-  throttleMs: 220,
-  fastWindowMs: 500,
-  fastDuration: 300,
+  throttleMs: 100,
+  fastWindowMs: 120,
+  fastDuration: 150,
   fastEasing: 'linear',
   settleDuration: SCROLL_TRANSITION_DURATION,
   settleEasing: SCROLL_TRANSITION_EASING,
