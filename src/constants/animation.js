@@ -13,14 +13,14 @@ export const SCROLL_TRANSITION_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
  * doesn't fly past dozens of items at once ("moving too fast" fix). Tuned for
  * a comfortable ~5-6 steps/sec while a direction key is held down.
  */
-export const NAV_THROTTLE_MS = 180
+export const NAV_THROTTLE_MS = 350
 
 /**
  * If the gap since the previous processed step is under this window, the user
  * is holding the key (fast scroll) rather than tapping. Should sit comfortably
  * above NAV_THROTTLE_MS so throttled held-repeats still register as "fast".
  */
-export const FAST_SCROLL_WINDOW_MS = 320
+export const FAST_SCROLL_WINDOW_MS = 500
 
 /**
  * Shorter, near-linear transition used while scrolling fast (held key). Each
@@ -28,5 +28,5 @@ export const FAST_SCROLL_WINDOW_MS = 320
  * continuous glide that keeps pace instead of restarting a long 1000ms ease-out
  * every repeat ("laggy" fix). A single press still uses the full smooth settle.
  */
-export const FAST_SCROLL_DURATION = 220
+export const FAST_SCROLL_DURATION = 500
 export const FAST_SCROLL_EASING = 'linear'
