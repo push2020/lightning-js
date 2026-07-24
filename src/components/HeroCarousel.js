@@ -1,6 +1,11 @@
 import Blits from '@lightningjs/blits'
 import { playFocusSound, playSelectSound } from '../helpers/focusSound.js'
 import { getTierConfig } from '../helpers/deviceTier.js'
+import {
+  SCROLL_TRANSITION_DURATION,
+  SCROLL_TRANSITION_EASING,
+  HERO_SCROLL,
+} from '../constants/animation.js'
 import HeroSlide from './HeroSlide.js'
 
 const { heroNeighbors: HERO_NEIGHBORS } = getTierConfig().window
@@ -36,6 +41,8 @@ export default Blits.Component('HeroCarousel', {
         :subtitle="$slide.subtitle"
         :description="$slide.description"
         :active="$index === $currentIndex"
+        :fadeDuration="$fadeDuration"
+        :fadeEasing="$fadeEasing"
       />
       <Element
         x="64"
@@ -83,6 +90,18 @@ export default Blits.Component('HeroCarousel', {
        * @type {number}
        */
       slideWinEnd: HERO_NEIGHBORS + 1,
+      /**
+       * Duration (ms) of the current slide crossfade. Shortened while Left/Right
+       * is held so held paging stays clean; restored to the full settle fade for
+       * a single, deliberate press.
+       * @type {number}
+       */
+      fadeDuration: SCROLL_TRANSITION_DURATION,
+      /**
+       * Easing of the current slide crossfade; near-linear while holding.
+       * @type {string}
+       */
+      fadeEasing: SCROLL_TRANSITION_EASING,
     }
   },
   input: {
@@ -91,6 +110,7 @@ export default Blits.Component('HeroCarousel', {
      * @returns {void}
      */
     left() {
+      if (!this.gateScrollStep()) return
       const previous = this.currentIndex === 0 ? this.slides.length - 1 : this.currentIndex - 1
       this.goToSlide(previous)
     },
@@ -99,6 +119,7 @@ export default Blits.Component('HeroCarousel', {
      * @returns {void}
      */
     right() {
+      if (!this.gateScrollStep()) return
       const next = this.currentIndex === this.slides.length - 1 ? 0 : this.currentIndex + 1
       this.goToSlide(next)
     },
@@ -111,6 +132,24 @@ export default Blits.Component('HeroCarousel', {
     },
   },
   methods: {
+    /**
+     * Rate-limits held-key auto-repeat and picks the crossfade speed. Drops
+     * repeats arriving faster than throttleMs so held paging doesn't flicker
+     * through slides; when a step is accepted, uses the short fade for held
+     * paging and the full settle fade for a single press.
+     * @returns {boolean} true if the caller should proceed with the step
+     */
+    gateScrollStep() {
+      const cfg = HERO_SCROLL
+      const now = performance.now()
+      const dt = now - (this._lastNavAt ?? -Infinity)
+      if (dt < cfg.throttleMs) return false
+      const fast = dt < cfg.fastWindowMs
+      this.fadeDuration = fast ? cfg.fastDuration : cfg.settleDuration
+      this.fadeEasing = fast ? cfg.fastEasing : cfg.settleEasing
+      this._lastNavAt = now
+      return true
+    },
     /**
      * Advances to the given slide index, sliding the mount window so only
      * the active slide and its immediate neighbors are instantiated

@@ -26,9 +26,9 @@ export const SCROLL_TRANSITION_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
  *   press (and the resting step after a held scroll).
  */
 export const VERTICAL_SCROLL = {
-  throttleMs: 350,
+  throttleMs: 420,
   fastWindowMs: 500,
-  fastDuration: 450,
+  fastDuration: 500,
   fastEasing: 'linear',
   settleDuration: SCROLL_TRANSITION_DURATION,
   settleEasing: SCROLL_TRANSITION_EASING,
@@ -38,6 +38,24 @@ export const HORIZONTAL_SCROLL = {
   throttleMs: 220,
   fastWindowMs: 500,
   fastDuration: 300,
+  fastEasing: 'linear',
+  settleDuration: SCROLL_TRANSITION_DURATION,
+  settleEasing: SCROLL_TRANSITION_EASING,
+}
+
+/**
+ * Held-scroll tuning for the hero carousel. Same fields as above, but here the
+ * transition is a crossfade (slide alpha) rather than a translate: fastDuration/
+ * settleDuration are the fade lengths. Held Left/Right paging drops repeats
+ * arriving faster than throttleMs and uses the shorter fade so slides don't pile
+ * up half-dissolved on top of each other; a single press keeps the full settle
+ * fade. A shorter fastDuration reads cleaner here than for a translating rail,
+ * since long crossfades overlap more slides.
+ */
+export const HERO_SCROLL = {
+  throttleMs: 200,
+  fastWindowMs: 400,
+  fastDuration: 200,
   fastEasing: 'linear',
   settleDuration: SCROLL_TRANSITION_DURATION,
   settleEasing: SCROLL_TRANSITION_EASING,

@@ -55,6 +55,13 @@ export default Blits.Component('HeroSlide', {
     subtitle: '',
     description: '',
     active: false,
+    /**
+     * Crossfade duration (ms), driven by the parent carousel so held paging can
+     * use a shorter fade than a single deliberate press.
+     */
+    fadeDuration: SCROLL_TRANSITION_DURATION,
+    /** Crossfade easing, driven by the parent carousel. */
+    fadeEasing: SCROLL_TRANSITION_EASING,
   },
   state() {
     return {
@@ -91,8 +98,8 @@ export default Blits.Component('HeroSlide', {
     alphaTransition() {
       return {
         value: this.active ? 1 : 0,
-        duration: this.mounted ? SCROLL_TRANSITION_DURATION : 0,
-        easing: SCROLL_TRANSITION_EASING,
+        duration: this.mounted ? this.fadeDuration : 0,
+        easing: this.fadeEasing,
       }
     },
     /**
