@@ -7,7 +7,7 @@
 export const TIER = {
   launch: {
     renderQuality: 'low', // simplest shader/texture path, cheapest to render
-    maxFPS: 60, // caps render loop to halve GPU/CPU work per second
+    maxFPS: 30, // caps render loop to halve GPU/CPU work per second
     viewportMargin: 100, // px outside viewport still considered "visible" for preloading
     // Renderer texture memory budget: stay under 120MB, start evicting at 70%,
     // sweep every 3s, and enforce the cap strictly (never overshoot) for constrained devices
@@ -26,7 +26,7 @@ export const TIER = {
 const HIGH_TIER = {
   launch: {
     renderQuality: 'high', // full shader/texture fidelity
-    maxFPS: 30, // smooth scrolling/animation on capable hardware
+    maxFPS: 60, // smooth scrolling/animation on capable hardware
     viewportMargin: 300, // preload further ahead since memory headroom is larger
     // Renderer texture memory budget: allow up to 350MB, start evicting at 85%,
     // sweep every 5s, and allow brief overshoot before enforcing the cap
