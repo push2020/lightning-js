@@ -4,9 +4,9 @@
  * cap rendering at 30fps and limit concurrently mounted nodes, avoiding the
  * need for per-device detection.
  */
-export const TIER = {
+export const LOW_TIER = {
   launch: {
-    renderQuality: 'high', // simplest shader/texture path, cheapest to render
+    renderQuality: 'low', // simplest shader/texture path, cheapest to render
     maxFPS: 30, // caps render loop to halve GPU/CPU work per second
     viewportMargin: 100, // px outside viewport still considered "visible" for preloading
     // Renderer texture memory budget: stay under 120MB, start evicting at 70%,
@@ -23,7 +23,7 @@ export const TIER = {
  * a future opt-in path (e.g. a settings toggle or query param) but not
  * currently used — the app renders at the low tier for all devices.
  */
-const HIGH_TIER = {
+const TIER = {
   launch: {
     renderQuality: 'high', // full shader/texture fidelity
     maxFPS: 60, // smooth scrolling/animation on capable hardware
