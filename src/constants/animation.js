@@ -72,6 +72,25 @@ export const HERO_SCROLL = {
 }
 
 /**
+ * Navbar highlight pill slide. When the tab cursor moves, the white pill glides
+ * from the old tab to the new one (its x and width both animate) instead of the
+ * highlight instantly jumping, matching the smooth slide of the page/rail scroll.
+ * Kept short so held Left/Right still feels responsive as the pill chases focus.
+ */
+export const NAVBAR_SLIDE = {
+  duration: 260,
+  easing: SCROLL_TRANSITION_EASING,
+}
+
+/**
+ * Minimal delay (ms) between a tab being highlighted and the target page
+ * actually being rendered. Lets the pill start sliding first, and debounces
+ * held Left/Right so only the tab the user lands on is rendered - intermediate
+ * tabs skipped over during a fast scroll never pay their (heavy) render cost.
+ */
+export const NAVBAR_NAV_DELAY = 180
+
+/**
  * Focus "lift": the selected card in the focused rail rises by `offset` px with
  * a short ease-out, giving a hover-lift/pop as focus lands on it. The rail's
  * fixed focus border is offset up by the same amount so it keeps framing the
