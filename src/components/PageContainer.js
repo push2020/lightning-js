@@ -87,6 +87,14 @@ export default Blits.Component('PageContainer', {
        */
       contentHasFocus: false,
       /**
+       * Suppresses the rail focus border while the page is still scrolling up
+       * out of the hero into the first rail. The border sits at a fixed screen
+       * slot, so without this it would appear over the hero before the rail has
+       * slid into place. Cleared once the scroll settles.
+       * @type {boolean}
+       */
+      railBorderSuppressed: false,
+      /**
        * Index of the first rail mounted by the :range virtualization window
        * @type {number}
        */
@@ -143,7 +151,7 @@ export default Blits.Component('PageContainer', {
       return getRailFocusBorderScreenY(this.railFocusBorderH, NAVBAR_HEIGHT)
     },
     showRailFocusBorder() {
-      return this.contentHasFocus && this.sectionIndex > 0
+      return this.contentHasFocus && this.sectionIndex > 0 && !this.railBorderSuppressed
     },
   },
   hooks: {
@@ -155,6 +163,7 @@ export default Blits.Component('PageContainer', {
     },
     destroy() {
       clearTimeout(this._railCompactTimer)
+      clearTimeout(this._borderRevealTimer)
     },
   },
   input: {
@@ -162,7 +171,9 @@ export default Blits.Component('PageContainer', {
       if (this.sectionIndex >= this.rails.length) return
       if (!this.gateScrollStep()) return
       this.contentHasFocus = true
+      const leavingHero = this.sectionIndex === 0
       this.sectionIndex++
+      if (leavingHero) this.suppressRailBorderUntilSettled()
       this.updateRailWindow()
       this.focusCurrentSection()
     },
@@ -206,6 +217,23 @@ export default Blits.Component('PageContainer', {
       const ref = this.sectionIndex === 0 ? 'hero' : `rail${this.sectionIndex - 1}`
       const target = this.$select(ref)
       if (target) target.$focus()
+    },
+    /**
+     * Hides the rail focus border until the hero-to-rail scroll settles, so the
+     * fixed-slot border doesn't flash over the hero before the first rail has
+     * slid into place. Uses the current step's scroll duration so the reveal
+     * lines up with the rail arriving.
+     * @returns {void}
+     */
+    suppressRailBorderUntilSettled() {
+      this.railBorderSuppressed = true
+      clearTimeout(this._borderRevealTimer)
+      // The scroll easing is a strong ease-out, so the rail visually reaches its
+      // slot in roughly the first half of the duration; reveal the border then
+      // rather than after the full settle, which reads as laggy.
+      this._borderRevealTimer = setTimeout(() => {
+        this.railBorderSuppressed = false
+      }, this.scrollDuration * 0.4)
     },
     updateRailWindow() {
       const railIndex = this.sectionIndex - 1

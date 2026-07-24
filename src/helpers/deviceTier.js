@@ -7,7 +7,7 @@
 export const TIER = {
   launch: {
     renderQuality: 'low', // simplest shader/texture path, cheapest to render
-    maxFPS: 30, // caps render loop to halve GPU/CPU work per second
+    maxFPS: 60, // caps render loop to halve GPU/CPU work per second
     viewportMargin: 100, // px outside viewport still considered "visible" for preloading
     // Renderer texture memory budget: stay under 120MB, start evicting at 70%,
     // sweep every 3s, and enforce the cap strictly (never overshoot) for constrained devices
