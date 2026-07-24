@@ -38,16 +38,16 @@ export const IMAGE_LOAD_DELAY = 280
 export const VERTICAL_SCROLL = {
   throttleMs: 200,
   fastWindowMs: 220,
-  fastDuration: 280,
+  fastDuration: 200,
   fastEasing: 'linear',
   settleDuration: SCROLL_TRANSITION_DURATION,
   settleEasing: SCROLL_TRANSITION_EASING,
 }
 
 export const HORIZONTAL_SCROLL = {
-  throttleMs: 100,
-  fastWindowMs: 150,
-  fastDuration: 200,
+  throttleMs: 150,
+  fastWindowMs: 200,
+  fastDuration: 150,
   fastEasing: 'linear',
   settleDuration: SCROLL_TRANSITION_DURATION,
   settleEasing: SCROLL_TRANSITION_EASING,
