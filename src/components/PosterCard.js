@@ -1,6 +1,6 @@
 import Blits from '@lightningjs/blits'
 import { CARD_TEXT_STRIP_HEIGHT } from '../constants/layout.js'
-import { IMAGE_LOAD_DELAY } from '../constants/animation.js'
+import { IMAGE_LOAD_DELAY, CARD_LIFT } from '../constants/animation.js'
 import { isFastScrolling, onSettled } from '../helpers/loadGate.js'
 import { isImageLoaded, markImageLoaded } from '../helpers/imageCache.js'
 import SkeletonCard from './SkeletonCard.js'
@@ -12,9 +12,11 @@ import SkeletonCard from './SkeletonCard.js'
 
 /**
  * A single OTT poster card: image, title and genre. Purely prop-driven and
- * has no notion of focus - the parent rail owns real keyboard focus and
+ * has no notion of keyboard focus - the parent rail owns real focus and
  * renders a single fixed focus border over whichever card slides into the
- * selected slot (see ContentRail.js). No animation.
+ * selected slot (see ContentRail.js). Its only bit of self-animation is the
+ * `lifted` prop: when the parent marks this card as the focused one, its
+ * content rises by CARD_LIFT.offset px with a short ease-out (hover-lift).
  */
 export default Blits.Component('PosterCard', {
   components: {
@@ -22,23 +24,25 @@ export default Blits.Component('PosterCard', {
   },
   template: `
     <Element :w="$w" :h="$h">
-      <Element
-        :w="$w"
-        :h="$imageH"
-        color="#ffffff"
-        :src="$imageSrc"
-        fit="cover"
-        @loaded="$onImageLoaded"
-        @error="$onImageError"
-      >
-        <Element :show="$hasProgress" :y="$imageH - 6" :w="$w" h="6" color="rgba(255, 255, 255, 0.25)">
-          <Element h="6" color="#00B3FF" :w="$w * $progressValue" />
+      <Element :w="$w" :h="$h" :y.transition="$liftTransition">
+        <Element
+          :w="$w"
+          :h="$imageH"
+          color="#ffffff"
+          :src="$imageSrc"
+          fit="cover"
+          @loaded="$onImageLoaded"
+          @error="$onImageError"
+        >
+          <Element :show="$hasProgress" :y="$imageH - 6" :w="$w" h="6" color="rgba(255, 255, 255, 0.25)">
+            <Element h="6" color="#00B3FF" :w="$w * $progressValue" />
+          </Element>
         </Element>
-      </Element>
-      <SkeletonCard :show="!$imageLoaded" :w="$w" :h="$imageH" />
-      <Element :y="$imageH + 14" :w="$w">
-        <Text :content="$title" size="26" color="#FFFFFF" maxwidth="$w" maxlines="1" />
-        <Text y="32" :content="$genre" size="20" color="#AAAAAA" maxwidth="$w" maxlines="1" />
+        <SkeletonCard :show="!$imageLoaded" :w="$w" :h="$imageH" />
+        <Element :y="$imageH + 14" :w="$w">
+          <Text :content="$title" size="26" color="#FFFFFF" maxwidth="$w" maxlines="1" />
+          <Text y="32" :content="$genre" size="20" color="#AAAAAA" maxwidth="$w" maxlines="1" />
+        </Element>
       </Element>
     </Element>
   `,
@@ -49,6 +53,12 @@ export default Blits.Component('PosterCard', {
     progress: undefined,
     w: 260,
     h: 390,
+    /**
+     * Whether this card is the focused card in its rail. When true the card
+     * content lifts up by CARD_LIFT.offset px; the parent rail sets this on the
+     * selected card only while the rail has focus (see ContentRail.js).
+     */
+    lifted: false,
   },
   state() {
     return {
@@ -100,6 +110,20 @@ export default Blits.Component('PosterCard', {
     progressValue() {
       if (typeof this.progress !== 'number') return 0
       return Math.min(Math.max(this.progress, 0), 1)
+    },
+    /**
+     * Vertical-offset transition for the hover-lift. Resting cards sit at y=0
+     * (matching the engine's default, so a freshly mounted card doesn't animate
+     * into place); the focused card animates up to -CARD_LIFT.offset with a
+     * short ease-out and drops back down when focus leaves it.
+     * @returns {{value: number, duration: number, easing: string}}
+     */
+    liftTransition() {
+      return {
+        value: this.lifted ? -CARD_LIFT.offset : 0,
+        duration: CARD_LIFT.duration,
+        easing: CARD_LIFT.easing,
+      }
     },
   },
   hooks: {

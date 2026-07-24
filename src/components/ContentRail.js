@@ -50,6 +50,7 @@ export default Blits.Component('ContentRail', {
             :progress="$item.progress"
             :w="$cardW"
             :h="$cardH"
+            :lifted="$index === $selectedIndex && $$hasFocus"
           />
         </Element>
       </Element>

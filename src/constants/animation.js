@@ -70,3 +70,16 @@ export const HERO_SCROLL = {
   settleDuration: SCROLL_TRANSITION_DURATION,
   settleEasing: SCROLL_TRANSITION_EASING,
 }
+
+/**
+ * Focus "lift": the selected card in the focused rail rises by `offset` px with
+ * a short ease-out, giving a hover-lift/pop as focus lands on it. The rail's
+ * fixed focus border is offset up by the same amount so it keeps framing the
+ * lifted card (see ContentRail.js / PageContainer.js). Kept quick (shorter than
+ * the scroll settle) so the card pops as it slides into the focus slot.
+ */
+export const CARD_LIFT = {
+  offset: 20,
+  duration: 220,
+  easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+}

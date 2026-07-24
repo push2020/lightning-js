@@ -15,6 +15,7 @@ import {
   SCROLL_TRANSITION_DURATION,
   SCROLL_TRANSITION_EASING,
   VERTICAL_SCROLL,
+  CARD_LIFT,
 } from '../constants/animation.js'
 import HeroCarousel from './HeroCarousel.js'
 import ContentRail from './ContentRail.js'
@@ -148,7 +149,9 @@ export default Blits.Component('PageContainer', {
       return this.focusedRail?.cardH ?? CARD_H
     },
     railFocusBorderY() {
-      return getRailFocusBorderScreenY(this.railFocusBorderH, NAVBAR_HEIGHT)
+      // Offset up by the hover-lift so the fixed border keeps framing the
+      // focused card, which lifts by CARD_LIFT.offset (see ContentRail.js).
+      return getRailFocusBorderScreenY(this.railFocusBorderH, NAVBAR_HEIGHT) - CARD_LIFT.offset
     },
     showRailFocusBorder() {
       return this.contentHasFocus && this.sectionIndex > 0 && !this.railBorderSuppressed
